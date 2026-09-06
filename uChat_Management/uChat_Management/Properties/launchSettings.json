@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "uChat_Management (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "uChat_Management (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
