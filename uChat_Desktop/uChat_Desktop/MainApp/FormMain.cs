@@ -1,11 +1,5 @@
 ﻿using AntdUI;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+using uChat_Desktop.MainApp.Pages;
 using uChat_Desktop.Service;
 
 namespace uChat_Desktop.MainApp {
@@ -17,20 +11,29 @@ namespace uChat_Desktop.MainApp {
         // objects
         public static FormMain instance;
 
-        private async void FormMain_Load(object sender, EventArgs e) {
-            // if (AccountService.LoggedAccount == null) {
-            //     MessageBox.Show("oops! It seems like that there no logged account.\n" +
-            //         "This might be a technical issue.\n" +
-            //         "Please restart this application.");
-            //     DialogResult = DialogResult.Abort;
-            //     return;
-            // }
+        // pages
+        private MainPage? mainPage;
 
+        private void FormMain_Load(object sender, EventArgs e) {
             instance = this;
+            mainPage = new MainPage() {
+                Parent = panelMain,
+                Dock = DockStyle.Fill
+            };
         }
 
-        private void FormMain_FormClosing(object sender, FormClosingEventArgs e) {
+        private async void FormMain_FormClosing(object sender, FormClosingEventArgs e) {
+            await ApiService.CloseAllWebSockets();
             Application.Exit();
+        }
+
+        private void FormMain_ResizeBegin(object sender, EventArgs e) {
+            panelMain.SuspendLayout();
+        }
+
+        private void FormMain_ResizeEnd(object sender, EventArgs e) {
+            panelMain.ResumeLayout(true);
+            panelMain.PerformLayout();
         }
     }
 }

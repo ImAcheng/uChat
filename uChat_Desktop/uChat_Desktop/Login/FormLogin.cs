@@ -1,5 +1,6 @@
 using AntdUI;
 using uChat_Desktop.Lang;
+using uChat_Desktop.Login;
 using uChat_Desktop.Service;
 
 namespace uChat_Desktop {
@@ -8,10 +9,12 @@ namespace uChat_Desktop {
             InitializeComponent();
         }
 
+        public static FormLogin Instance;
+
         private void FormLogin_Load(object sender, EventArgs e) {
+            Instance = this;
             // components setup
             lbFailedMessage.Text = string.Empty;
-            // LangsManager.SetLang("zh-TW");
             _SetLang();
         }
 
@@ -46,6 +49,11 @@ namespace uChat_Desktop {
 
         private void btnExit_Click(object sender, EventArgs e) {
             Application.Exit();
+        }
+
+        private void llb_go_create_acc_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            using var cForm = new FormCreateAccount();
+            cForm.ShowDialog();
         }
     }
 }

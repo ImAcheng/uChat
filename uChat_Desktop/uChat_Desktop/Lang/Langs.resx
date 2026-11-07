@@ -126,6 +126,9 @@
   <data name="bad_email" xml:space="preserve">
     <value>Incorrect email format.</value>
   </data>
+  <data name="bad_username" xml:space="preserve">
+    <value>Invalid username.</value>
+  </data>
   <data name="data_failed" xml:space="preserve">
     <value>Some data is broken and cannot be read.</value>
   </data>
@@ -142,13 +145,19 @@
     <value>A network related problem occurred. Please try again later.</value>
   </data>
   <data name="no_acc_go_create" xml:space="preserve">
-    <value>No account yet? Create one now!</value>
+    <value>Don't have account yet? Create one now!</value>
   </data>
   <data name="password" xml:space="preserve">
     <value>Password</value>
   </data>
   <data name="pwd_failed" xml:space="preserve">
     <value>Password is incorrect.</value>
+  </data>
+  <data name="pwd_not_match" xml:space="preserve">
+    <value>Password doesn't match.</value>
+  </data>
+  <data name="start_service" xml:space="preserve">
+    <value>Starting Services</value>
   </data>
   <data name="uname_pwd_empty" xml:space="preserve">
     <value>Username and password cannot be empty.</value>

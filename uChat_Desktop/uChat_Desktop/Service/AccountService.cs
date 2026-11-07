@@ -8,6 +8,9 @@ using uChat_Desktop.Lang;
 using uChat_Desktop.MainApp;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using System.Net.WebSockets;
+using uChat_Desktop.Extention;
+using uChat_Desktop.Login;
 
 namespace uChat_Desktop.Service {
     internal class AccountService {
@@ -45,6 +48,11 @@ namespace uChat_Desktop.Service {
             return await _DirectLogin(content);
         }
 
+        public static void Logout() {
+            LoggedAccount = null;
+            FormMain.instance.Hide();
+        }
+
         // APIs
 
         /// <summary>
@@ -66,7 +74,7 @@ namespace uChat_Desktop.Service {
             };
 
             try {
-                using var client = new HttpClient() { BaseAddress = ApiService.ApiUri };
+                using var client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
                 using var resp = await client.PostAsJsonAsync("api/account/login", rqContent);
 
                 var content = await resp.Content.ReadFromJsonAsync<AccountResult>();
@@ -118,13 +126,15 @@ namespace uChat_Desktop.Service {
         /// </summary>
         private static async Task<bool> _DirectLogin(SavedAccount account) {
             try {
-                using HttpClient client = new HttpClient() { BaseAddress = ApiService.ApiUri };
+                using HttpClient client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
                 using var resp = await client.PostAsJsonAsync("api/account/d-login", account);
                 var content = await resp.Content.ReadFromJsonAsync<AccountResult>();
 
                 if (!content?.success ?? true) {
                     return false;
                 }
+
+                LoggedAccount = content?.account;
 
                 return true;
             }
@@ -141,22 +151,79 @@ namespace uChat_Desktop.Service {
         /// <summary>
         ///     Call api to create an account.
         /// </summary>
-        public static async Task<bool> CallCreateAccount(CreateAccountRequest rq) {
-            using HttpClient client = new HttpClient() { BaseAddress = new Uri("http://localhost:5331") };
-            using var resp = await client.PostAsJsonAsync("api/account/create", rq);
+        public static async Task<AccountResult?> CallCreateAccount(CreateAccountRequest rq) {
+            try {
+                using HttpClient client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
+                using var resp = await client.PostAsJsonAsync("api/account/create", rq);
 
-            var content = await resp.Content.ReadFromJsonAsync<AccountResult>();
+                /*
+                if (!resp.IsSuccessStatusCode)
+                    Notification.error(FormMain.instance, "uChat", resp.StatusCode.ToString() + await resp.Content.ReadAsStringAsync());
+                */
+
+                var content = await resp.Content.ReadFromJsonAsync<AccountResult>();
+
+                if (content == null) return null;
+
+                content.message = _GetMessage(content.message);
+                return content;
+            }
+            catch (HttpRequestException) {
+                uMessageBox.Show(
+                    FormCreateAccount.Instance,
+                    "A network related problem occurred.\n" +
+                    "Please try again later.",
+                    TType.Error);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Connect to api ws end point and update account's online status.
+        /// Connection failed means internet problems occurred.
+        /// </summary>
+        public static async Task<bool> UpdateAccountOnlineStatus() {
+            if (LoggedAccount == null || ApiService.AccountWebSocket == null) {
+                return true;
+            }
+
+            var request = new AccountWSRequest() {
+                AccountId = LoggedAccount.AccountId,
+                RequestType = "online_update",
+                RequestTime = DateTimeOffset.Now,
+            };
+
+            var json = JsonSerializer.Serialize(request);
+            var bytes = Encoding.UTF8.GetBytes(json);
 
             try {
-                
+                await ApiService.AccountWebSocket.SendAsync(
+                new ArraySegment<byte>(bytes),
+                WebSocketMessageType.Text,
+                true, CancellationToken.None);
             }
-            catch {
-                Notification.error(FormMain.instance, "uChat", 
-                    "A network related problem occurred.\nPlease try again later.", autoClose: 3);
+            catch (WebSocketException) {
                 return false;
             }
 
             return true;
+        }
+
+        public static async Task<List<AccountDTO>?> FindUsers(string keyword) {
+            using var client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
+
+            try {
+                var resp = await client.GetFromJsonAsync<List<AccountDTO>>($"api/account/find/{keyword.Trim()}");
+                return resp;
+            }
+            catch (HttpRequestException) {
+                uMessageBox.Show(
+                    FormCreateAccount.Instance,
+                    "A network related problem occurred.\n" +
+                    "Please try again later.",
+                    TType.Error);
+                return null;
+            }
         }
 
         /// <summary>
@@ -172,7 +239,8 @@ namespace uChat_Desktop.Service {
                 { "PWD_FAIL", Langs.pwd_failed },
                 { "BAD_EMAIL", Langs.bad_email },
                 { "EXISTED_DATA", Langs.acc_existed },
-                { "OK", "OK" }
+                { "OK", "OK" },
+                { "BAD_USERNAME", Langs.bad_username }
             };
 
             if (dict.TryGetValue(key, out var val))
@@ -201,20 +269,27 @@ namespace uChat_Desktop.Service {
 
     internal class AccountResult {
         public bool success { get; set; }
-        public string message { get; set; }
+        public string message { get; set; } = string.Empty;
         public AccountDTO? account { get; set; }
     }
 
     public class CreateAccountRequest {
-        public string email { get; set; }
         public string username { get; set; }
+        public string password { get; set; }
         public string? nickname { get; set; }
-        public string? accountBio { get; set; }
         public byte genderCode { get; set; }
     }
 
     public class SavedAccount {
         public Guid accountId { get; set; }
-        public string password { get; set; }
+        public string password { get; set; } = string.Empty;
+    }
+
+    public class AccountWSRequest {
+        public Guid AccountId { get; set; }
+        public string RequestType { get; set; } = string.Empty;
+
+        // use data below depends on what clients request
+        public DateTimeOffset? RequestTime { get; set; }
     }
 }

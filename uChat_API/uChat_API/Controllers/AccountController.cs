@@ -78,51 +78,75 @@ namespace uChat_API.Controllers {
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest data) {
-            string email = data.email.Trim().ToLower();
+            Console.WriteLine($"[Debug] a client fetched account/create ({data.username})");
+
             string username = data.username.Trim().ToLower();
-            string? nickname = data.nickname;
-            string? accountBio = data.accountBio;
+            string password = data.password;
+            string? nickname = string.IsNullOrWhiteSpace(data.nickname) ? null : data.nickname;
             byte gender = data.genderCode;
+            string usernamePattern = @"^[a-zA-Z0-9._]{2,}$";
 
-            string emailPattern = @"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-            string usernamePattern = @"^[a-zA-Z0-9._-]{2,}$";
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                return BadRequest(new { success = false, message = AccountMessage.EmptyData });
 
-            bool isEmailValid = Regex.IsMatch(email, emailPattern);
-            bool isUsernameValid = Regex.IsMatch(username, usernamePattern);
-
-            if (!isEmailValid)
-                return BadRequest(new { success = false, message = AccountMessage.InvalidEmail });
-
-            bool _existsed = await _db.Account
+            bool isExisted = await _db.Account
                 .AsNoTracking()
-                .AnyAsync(x => x.Username == username || x.Email == email);
+                .AnyAsync(x => x.Username == username);
 
-            if (_existsed)
+            if (isExisted)
                 return BadRequest(new { success = false, message = AccountMessage.ExistedData });
+
+            bool isUsernameValid = Regex.IsMatch(username, usernamePattern);
+            if (!isUsernameValid)
+                return BadRequest(new { success = false, message = AccountMessage.InvalidUsername });
 
             var newAcc = new Account() {
                 AccountId = Guid.NewGuid(),
-                Email = email,
+                Email = $"{username}@noemail.now",
                 Username = username,
+                Password = password,
                 Nickname = nickname,
-                AccountBio = accountBio,
+                AccountBio = null,
                 GenderCode = gender,
                 CreateDateTime = DateTimeOffset.Now
             };
 
-            await _db.Database.BeginTransactionAsync();
             try {
+                await _db.Database.BeginTransactionAsync();
                 await _db.Account.AddAsync(newAcc);
                 await _db.SaveChangesAsync();
             }
             catch (Exception ex) {
                 await _db.Database.RollbackTransactionAsync();
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = $"Unexpected error occurred: {ex.Message}" });
             }
 
             await _db.Database.CommitTransactionAsync();
 
-            return Ok(new { success = false, message = AccountMessage.Success, account = newAcc });
+            return Ok(new { success = true, message = AccountMessage.Success, account = newAcc });
+        }
+
+        /// <summary>
+        /// An endpoint to check if one username is already existsed.
+        /// </summary>
+        [HttpPost("is-exists")]
+        public async Task<IActionResult> CheckUsernameExisted([FromBody] string username) {
+            bool isExisted = await _db.Account
+                .AsNoTracking()
+                .AnyAsync(x => x.Username == username);
+
+            return Ok(isExisted);
+        }
+
+        [HttpGet("find/{keyword}")]
+        public async Task<IActionResult> FindUsers([FromRoute] string keyword) {
+            var _Result = await _db.Account
+                .AsNoTracking()
+                .Where(x => x.Username.Contains(keyword.ToLowerInvariant()))
+                .Select(x => new AccountDTO(x))
+                .ToListAsync();
+
+            return Ok(_Result);
         }
     }
 
@@ -135,6 +159,7 @@ namespace uChat_API.Controllers {
         public static string ExistedData = "EXISTED_DATA";
 
         public static string Success = "OK";
+        public static string InvalidUsername = "BAD_USERNAME";
     }
 
     public class LoginRequest {
@@ -143,10 +168,9 @@ namespace uChat_API.Controllers {
     }
 
     public class CreateAccountRequest {
-        public string email { get; set; }
         public string username { get; set; }
+        public string password { get; set; }
         public string? nickname { get; set; }
-        public string? accountBio { get; set; }
         public byte genderCode { get; set; }
     }
 

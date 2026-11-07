@@ -24,7 +24,8 @@
         /// </summary>
         private void InitializeComponent() {
             label1 = new Label();
-            label2 = new Label();
+            lbConn = new Label();
+            panelBack = new Panel();
             SuspendLayout();
             // 
             // label1
@@ -37,15 +38,24 @@
             label1.Text = "uChat";
             label1.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label2
+            // lbConn
             // 
-            label2.Font = new Font("Microsoft JhengHei UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 136);
-            label2.Location = new Point(12, 177);
-            label2.Name = "label2";
-            label2.Size = new Size(326, 37);
-            label2.TabIndex = 1;
-            label2.Text = "Connecting to Service...";
-            label2.TextAlign = ContentAlignment.MiddleCenter;
+            lbConn.Font = new Font("Microsoft JhengHei UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 136);
+            lbConn.Location = new Point(12, 177);
+            lbConn.Name = "lbConn";
+            lbConn.Size = new Size(326, 37);
+            lbConn.TabIndex = 1;
+            lbConn.Text = "lbConn";
+            lbConn.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // panelBack
+            // 
+            panelBack.BorderStyle = BorderStyle.FixedSingle;
+            panelBack.Dock = DockStyle.Fill;
+            panelBack.Location = new Point(0, 0);
+            panelBack.Name = "panelBack";
+            panelBack.Size = new Size(350, 350);
+            panelBack.TabIndex = 2;
             // 
             // FormBackground
             // 
@@ -53,8 +63,9 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(350, 350);
-            Controls.Add(label2);
+            Controls.Add(lbConn);
             Controls.Add(label1);
+            Controls.Add(panelBack);
             Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             ForeColor = Color.White;
             FormBorderStyle = FormBorderStyle.None;
@@ -62,13 +73,14 @@
             Name = "FormBackground";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "uChat Background Services";
-            Load += this.FormBackground_Load;
+            Load += FormBackground_Load;
+            FormClosing += FormBackground_FormClosing;
             ResumeLayout(false);
         }
-
         #endregion
 
         private Label label1;
-        private Label label2;
+        private Label lbConn;
+        private Panel panelBack;
     }
 }

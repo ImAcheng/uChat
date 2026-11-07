@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -27,31 +28,45 @@ namespace uChat_API.Websocket {
 
             var buffer = new byte[1024*8];
 
-            while (websocket.State == System.Net.WebSockets.WebSocketState.Open) {
-                var result = await websocket.ReceiveAsync(buffer, CancellationToken.None);
+            Console.WriteLine("[Debug] A client connected to Account Websocket.");
 
-                if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close) {
-                    await websocket.CloseAsync(
-                            System.Net.WebSockets.WebSocketCloseStatus.NormalClosure,
-                            "CONN_CLOSED",
-                            CancellationToken.None
+            try {
+                while (websocket.State == WebSocketState.Open) {
+                    var result = await websocket.ReceiveAsync(buffer, CancellationToken.None);
+
+                    if (result.MessageType == WebSocketMessageType.Close) {
+                        await websocket.CloseAsync(
+                                WebSocketCloseStatus.NormalClosure,
+                                "CONN_CLOSED",
+                                CancellationToken.None
                         );
+
+                        Console.WriteLine("[Debug] A client disconnected from Account Websocket.");
+
+                        break;
+                    }
+
+                    if (result.MessageType != WebSocketMessageType.Text) continue;
+
+                    var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+                    await ProcessTask(websocket, json);
                 }
-
-                if (result.MessageType != System.Net.WebSockets.WebSocketMessageType.Text) continue;
-
-                var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-
-                await ProcessTask(websocket, json);
+            }
+            catch (WebSocketException) {
+                Console.WriteLine("[Debug] A client disconnected from Account Websocket (Forced).");
+            }
+            catch (OperationCanceledException) {
+                Console.WriteLine("[Debug] A client disconnected from Account Websocket (Forced).");
             }
         }
 
         private async Task ProcessTask(WebSocket ws, string json) {
-            // define request as null to prevent compiler from annoying :D
-            AccountRequest? request = null;
+            // define request as null to prevent intellisence from annoying :D
+            AccountWSRequest? request = null;
 
             try {
-                request = JsonSerializer.Deserialize<AccountRequest>(json);
+                request = JsonSerializer.Deserialize<AccountWSRequest>(json);
 
                 if (request == null || string.IsNullOrWhiteSpace(request.RequestType))
                     throw new JsonException();
@@ -77,7 +92,7 @@ namespace uChat_API.Websocket {
 
             switch (request.RequestType) {
                 case "online_update":
-                    acc.LastOnlineDateTime = request.RequestTime;
+                    acc.LastOnlineDateTime = DateTimeOffset.Now;
                     await db.SaveChangesAsync();
                     await SendDataBack(ws, new { success = true, message = AccountMessage.Success });
                     break;
@@ -99,7 +114,7 @@ namespace uChat_API.Websocket {
         }
     }
 
-    public class AccountRequest {
+    public class AccountWSRequest {
         public Guid AccountId { get; set; }
         public string RequestType { get; set; } = string.Empty;
 

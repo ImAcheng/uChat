@@ -2,11 +2,18 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Lang\Langs.resx" />
+    <None Include="Login\FormLogin.resx" />
+    <None Include="MainApp\FormBackground.resx" />
+    <None Include="MainApp\FormMain.resx" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AntdUI" Version="2.4.6" />

@@ -1,8 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace uChat_API.DbModel {
     public class Account {
         public Guid AccountId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long AccountNo { get; set; }
         public string Email { get; set; } // alr, this is given up
         public string Username { get; set; } // I don't think this can be empty str
@@ -33,6 +35,7 @@ namespace uChat_API.DbModel {
             Nickname = _acc.Nickname;
             AccountBio = _acc.AccountBio;
             GenderCode = _acc.GenderCode;
+            Username = _acc.Username;
         }
     }
 }

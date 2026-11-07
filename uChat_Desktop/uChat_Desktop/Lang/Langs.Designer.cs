@@ -88,6 +88,15 @@ namespace uChat_Desktop.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid username..
+        /// </summary>
+        internal static string bad_username {
+            get {
+                return ResourceManager.GetString("bad_username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some data is broken and cannot be read..
         /// </summary>
         internal static string data_failed {
@@ -133,7 +142,7 @@ namespace uChat_Desktop.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No account yet? Create one now!.
+        ///   Looks up a localized string similar to Don&apos;t have account yet? Create one now!.
         /// </summary>
         internal static string no_acc_go_create {
             get {
@@ -156,6 +165,24 @@ namespace uChat_Desktop.Lang {
         internal static string pwd_failed {
             get {
                 return ResourceManager.GetString("pwd_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password doesn&apos;t match..
+        /// </summary>
+        internal static string pwd_not_match {
+            get {
+                return ResourceManager.GetString("pwd_not_match", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting Services.
+        /// </summary>
+        internal static string start_service {
+            get {
+                return ResourceManager.GetString("start_service", resourceCulture);
             }
         }
         

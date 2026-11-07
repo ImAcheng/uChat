@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="acc_existed" xml:space="preserve">
+    <value>此名稱已被使用</value>
+  </data>
+  <data name="acc_not_found" xml:space="preserve">
+    <value>找不到此帳號</value>
+  </data>
   <data name="data_failed" xml:space="preserve">
     <value>很抱歉，某些資料毀損且無法正確被讀取。</value>
   </data>
@@ -131,6 +137,9 @@
   </data>
   <data name="password" xml:space="preserve">
     <value>密碼</value>
+  </data>
+  <data name="start_service" xml:space="preserve">
+    <value>啟動服務中</value>
   </data>
   <data name="uname_pwd_empty" xml:space="preserve">
     <value>使用者名稱和密碼不可為空。</value>

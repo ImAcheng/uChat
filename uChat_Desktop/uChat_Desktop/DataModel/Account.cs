@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 namespace uChat_Desktop.DataModel {
-    internal class AccountDTO {
+    public class AccountDTO {
         public Guid AccountId { get; set; }
         public long AccountNo { get; set; }
         public string Email { get; set; }

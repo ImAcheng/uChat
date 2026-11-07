@@ -129,6 +129,7 @@
             llb_go_create_acc.Text = "llb_go_create_acc";
             llb_go_create_acc.TextAlign = ContentAlignment.MiddleRight;
             llb_go_create_acc.VisitedLinkColor = Color.SteelBlue;
+            llb_go_create_acc.LinkClicked += llb_go_create_acc_LinkClicked;
             // 
             // FormLogin
             // 
@@ -152,6 +153,7 @@
             Margin = new Padding(4);
             Mode = AntdUI.TAMode.Dark;
             Name = "FormLogin";
+            Resizable = false;
             Text = "uChat - Login";
             Load += FormLogin_Load;
             ResumeLayout(false);

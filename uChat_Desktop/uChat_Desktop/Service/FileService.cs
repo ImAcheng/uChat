@@ -5,7 +5,8 @@ using System.Text;
 
 namespace uChat_Desktop.Service {
     internal class FileService {
-        private readonly static string _AppFileRoot = Path.Combine(Application.CommonAppDataPath, ".uChat");
+        private readonly static string _AppFileRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ".uChat");
 
         /// <summary>
         ///     Call this when program start.
