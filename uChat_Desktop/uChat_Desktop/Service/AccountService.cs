@@ -213,7 +213,7 @@ namespace uChat_Desktop.Service {
             using var client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
 
             try {
-                var resp = await client.GetFromJsonAsync<List<AccountDTO>>($"api/account/find/{keyword.Trim()}");
+                var resp = await client.GetFromJsonAsync<List<AccountDTO>>($"api/account/find/{keyword.Trim()}/{LoggedAccount.Username}");
                 return resp;
             }
             catch (HttpRequestException) {

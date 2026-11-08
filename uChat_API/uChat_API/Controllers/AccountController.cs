@@ -138,11 +138,11 @@ namespace uChat_API.Controllers {
             return Ok(isExisted);
         }
 
-        [HttpGet("find/{keyword}")]
-        public async Task<IActionResult> FindUsers([FromRoute] string keyword) {
+        [HttpGet("find/{keyword}/{self}")]
+        public async Task<IActionResult> FindUsers([FromRoute] string keyword, [FromRoute] string self) {
             var _Result = await _db.Account
                 .AsNoTracking()
-                .Where(x => x.Username.Contains(keyword.ToLowerInvariant()))
+                .Where(x => x.Username != self && x.Username.Contains(keyword.ToLowerInvariant()))
                 .Select(x => new AccountDTO(x))
                 .ToListAsync();
 

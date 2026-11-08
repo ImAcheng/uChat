@@ -1,15 +1,90 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using uChat_API;
 using uChat_API.DbModel;
 using uChat_API.Websocket;
+
+Console.WriteLine("[Info] uChat is now starting, please wait.");
+string? AppBasePath = AppContext.BaseDirectory;
+
+if (AppBasePath == null) {
+    Console.WriteLine("[Error] Application base path is no accessible.");
+    Console.ReadKey(true);
+    return;
+}
+
+string? ConnectionStringPath = Path.Combine(AppBasePath, "ConnStr.ucdata");
+if (!Path.Exists(ConnectionStringPath)) {
+    Console.WriteLine($"[Error] Connection string properties file is not exists.\n" +
+        $"Please create it at {ConnectionStringPath}");
+    Console.ReadKey(true);
+    return;
+}
+
+string[] propVerified = { "ConnStr", "Database" };
+string[] connFileCtx = File.ReadAllText(ConnectionStringPath).Trim().Split("\n");
+Dictionary<string, string> ConnStrContext = new Dictionary<string, string>();
+foreach (string line in connFileCtx) {
+    string[] ctx = line.Split("=>");
+
+    if (ctx.Length != 2) {
+        Console.WriteLine("[Error] Wrong connection string properties format.");
+        Console.ReadKey(true);
+        return;
+    }
+
+    ConnStrContext[ctx[0]] = ctx[1];
+}
+
+if (!propVerified.All(ConnStrContext.ContainsKey)) {
+    Console.WriteLine("[Error] Wrong connection string properties format.");
+    Console.ReadKey(true);
+    return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 
+// Test if server is connectable
+try {
+    using var sqlConn = new SqlConnection(ConnStrContext["ConnStr"]);
+    sqlConn.Open();
+}
+catch (Exception ex) {
+    Console.WriteLine($"[Error] Cannot open connection to the SQL Server.");
+    Console.ReadKey(true);
+    return;
+}
+
+string ConnectionString;
+
+// Test if target db is connectable
+try {
+    ConnectionString = ConnStrContext["ConnStr"] + ConnStrContext["Database"];
+    using var sqlConn = new SqlConnection(ConnectionString);
+    sqlConn.Open();
+}
+catch (Exception ex) {
+    Console.WriteLine($"[Info] Target database is not exists. Creating now.");
+
+    using var sqlConn = new SqlConnection(ConnStrContext["ConnStr"]);
+    sqlConn.Open();
+
+    foreach (string cmd in DbBase.CreateDb.Split(";")) {
+        if (string.IsNullOrWhiteSpace(cmd)) continue;
+        using var sqlCmd = new SqlCommand(cmd, sqlConn);
+        sqlCmd.ExecuteNonQuery();
+    }
+
+    Console.WriteLine("[Info] Database created. Please re-open server again.");
+    Console.ReadKey(true);
+    return;
+}
+
 builder.Services.AddDbContext<UChatDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Main")));
+        options.UseSqlServer(ConnectionString));
 
 builder.Services.AddSingleton<AccountHandler>();
 builder.Services.AddSingleton<ChatHandler>();
