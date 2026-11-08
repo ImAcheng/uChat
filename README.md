@@ -1,21 +1,25 @@
 # uChat
-A self-hosted chatting system.
+* Version: Indev
+
+## What is uChat?
+uChat is a self-hosted chatting system allowing you to setup your own server.  
+**All datas are stored in your own database.**
 
 ## Apps Included
 * Server Program (Windows)
 * Desktop Application (Windows)
 
-## Features
-* Chats
-* Create Private Server (SQL Server Required)
-* AI Note
-* AI Assistant
+## How to use?
+1. Setup your SQL Server connection string in the *Server Program Config file*.
+2. Open *Server Program*.
+3. Wait for *Server Program* checking and build the database.
+4. Open *Desktop Application*.
+5. Connect by your Server IP.
+6. Login & Chat  
 
-## Private Server Setup
-1. Install SQL Server 2025 Developer Edition (Default Installation)
-2. Setup Connection String in API Program
-3. Create Servers in Desktop Application (Done)
+## Requirement
+* Microsoft SQL Server Database (versions >= 2022 are recommanded)
+* .NET 8 Desktop Runtime (for Windows)
 
-## Important
-This is a school project, and I won't accept any pull request.  
-There will be no updates after the project time (except I want to).
+## Other Information
+You can check API_DOC.md for more information about the API.
