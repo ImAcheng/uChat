@@ -44,9 +44,8 @@ namespace uChat_Desktop.MainApp {
 
         byte _DotsCount = 0;
         private void AnimationTimer_Tick(object? sender, EventArgs e) {
-            _DotsCount %= 4;
             lbConn.Text = _SubText + string.Join("", Enumerable.Repeat(".", _DotsCount));
-            ++_DotsCount;
+            ++_DotsCount; _DotsCount %= 4;
         }
 
         #region connection checker

@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace uChat_API.DbModel {
     public class Account {
         public Guid AccountId { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long AccountNo { get; set; }
-        public string Email { get; set; } // alr, this is given up
+        public string? Email { get; set; } // alr, it's totally abandoned
         public string Username { get; set; } // I don't think this can be empty str
         public string Password { get; set; } // I don't think this can be empty str, either
         public string? Nickname { get; set; } = string.Empty;
@@ -23,18 +22,13 @@ namespace uChat_API.DbModel {
     public class AccountDTO {
         public Guid AccountId { get; set; }
         public long AccountNo { get; set; }
-        public string Email { get; set; }
         public string Username { get; set; }
         public string? Nickname { get; set; }
-        public string? AccountBio { get; set; }
-        public byte GenderCode { get; set; }
 
         public AccountDTO(Account _acc) {
             AccountId = _acc.AccountId;
             AccountNo = _acc.AccountNo;
             Nickname = _acc.Nickname;
-            AccountBio = _acc.AccountBio;
-            GenderCode = _acc.GenderCode;
             Username = _acc.Username;
         }
     }

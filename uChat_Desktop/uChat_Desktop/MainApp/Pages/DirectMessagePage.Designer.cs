@@ -56,13 +56,13 @@
             // 
             splitter1.Panel1.Controls.Add(panelChatHeadsContainer);
             splitter1.Panel1.Padding = new Padding(5, 0, 0, 5);
-            splitter1.Panel1MinSize = 100;
+            splitter1.Panel1MinSize = 200;
             // 
             // splitter1.Panel2
             // 
             splitter1.Panel2.Controls.Add(panel1);
             splitter1.Panel2.Padding = new Padding(0, 0, 5, 5);
-            splitter1.Panel2MinSize = 640;
+            splitter1.Panel2MinSize = 0;
             splitter1.Size = new Size(850, 515);
             splitter1.SplitterDistance = 205;
             splitter1.SplitterSize = 10;

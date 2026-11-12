@@ -65,6 +65,7 @@
             btnGoMsg.Name = "btnGoMsg";
             btnGoMsg.Size = new Size(50, 50);
             btnGoMsg.TabIndex = 0;
+            btnGoMsg.Click += btnGoMsg_Click;
             // 
             // btnAddFrd
             // 

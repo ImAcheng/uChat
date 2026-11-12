@@ -11,5 +11,7 @@
         public DateTimeOffset CreateDateTime { get; set; }
 
         public DateTimeOffset? UpdateDateTime { get; set; }
+
+        public virtual Account Account { get; set; }
     }
 }

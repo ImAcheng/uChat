@@ -156,6 +156,10 @@
   <data name="uname_pwd_empty" xml:space="preserve">
     <value>Username and password cannot be empty.</value>
   </data>
+  <data name="unknown_problem" xml:space="preserve">
+    <value>Sorry, but an unknown problem occurred.
+Please Report it to us: </value>
+  </data>
   <data name="username" xml:space="preserve">
     <value>Username</value>
   </data>

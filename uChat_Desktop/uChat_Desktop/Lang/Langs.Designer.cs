@@ -196,6 +196,16 @@ namespace uChat_Desktop.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sorry, but an unknown problem occurred.
+        ///Please Report it to us: .
+        /// </summary>
+        internal static string unknown_problem {
+            get {
+                return ResourceManager.GetString("unknown_problem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Username.
         /// </summary>
         internal static string username {

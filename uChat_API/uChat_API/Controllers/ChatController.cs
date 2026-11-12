@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using uChat_API.DbModel;
 
@@ -13,15 +12,31 @@ namespace uChat_API.Controllers {
             _db = db;
         }
 
+        [HttpGet("get-chats/{userId:guid}")]
+        public async Task<IActionResult> GetChats([FromRoute] Guid userId) {
+            var _result = await (from a in _db.Account.AsNoTracking()
+                                 where a.AccountId == userId
+                                 join m in _db.ChatRoomMember.AsNoTracking() on a.AccountId equals m.AccountId
+                                 join r in _db.ChatRoom on m.ChatRoomId equals r.ChatRoomId
+                                 join ms in _db.ChatRoomMember on r.ChatRoomId equals ms.ChatRoomId
+                                 select new ChatDisplayDTO() {
+                                     ChatId = r.ChatRoomId,
+                                     ChatName = r.ChatName ?? ms.Account.Username
+                                 }).ToListAsync();
+
+            return Ok(new { success = true, message = "", chat = _result });
+        }
+
         [HttpPost("open-by-user")]
         public async Task<IActionResult> OpenChatByUser([FromBody] GeneralChatRequest data) {
+            // this is called when users try to open a chat by clicking one's profile
             // check if they have chat
             var ctx = await (from self in _db.ChatRoomMember.AsNoTracking()
-                        where self.AccountId == data.Requester
-                        join r in _db.ChatRoom on self.ChatRoomId equals r.ChatRoomId
-                        join they in _db.ChatRoomMember on r.ChatRoomId equals they.ChatRoomId
-                        where they.AccountId == data.Target
-                        select new OneToOneChat(r, self, they)).FirstOrDefaultAsync();
+                             where self.AccountId == data.Requester
+                             join r in _db.ChatRoom on self.ChatRoomId equals r.ChatRoomId
+                             join they in _db.ChatRoomMember on r.ChatRoomId equals they.ChatRoomId
+                             where they.AccountId == data.Target && r.ChatRoomType == 0
+                             select new OneToOneChat(r, self.Account, they.Account)).FirstOrDefaultAsync();
 
             if (ctx == null) {
                 var chat = new ChatRoom() {
@@ -57,14 +72,19 @@ namespace uChat_API.Controllers {
                     return Ok(new { success = false, message = "Sorry! Please try again later." });
                 }
 
-                ctx = new OneToOneChat(chat, self, they);
+                ctx = new OneToOneChat(chat, self.Account, they.Account);
             }
 
             return Ok(new {
                 success = true,
                 message = "OK",
                 chat = new ChatDTO() {
-
+                    ChatId = ctx.Chat!.ChatRoomId,
+                    ChatType = 0,
+                    Members = new List<AccountDTO>() {
+                        new AccountDTO(ctx.Self!),
+                        new AccountDTO(ctx.They!)
+                    }
                 }
             });
         }
@@ -77,19 +97,12 @@ namespace uChat_API.Controllers {
 
     public class OneToOneChat {
         public ChatRoom? Chat;
-        public ChatRoomMember? Self, They;
+        public Account? Self, They;
 
-        public OneToOneChat(ChatRoom? chat, ChatRoomMember? self, ChatRoomMember? they) {
+        public OneToOneChat(ChatRoom? chat, Account? self, Account? they) {
             Chat = chat;
             Self = self;
             They = they;
         }
-    }
-
-    public class ChatDTO {
-        public Guid ChatId { get; set; }
-        public string? ChatName { get; set; }
-        public List<Guid> Members { get; set; }
-        public List<string> Names { get; set; }
     }
 }
