@@ -6,6 +6,11 @@ namespace uChat_API.DbModel {
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.Entity<ChatRoomMember>()
+                .HasOne(x => x.Account)
+                .WithMany()
+                .HasForeignKey(x => x.AccountId);
+
+            modelBuilder.Entity<ChatRoomMember>()
                 .HasOne(x => x.ChatRoom)
                 .WithMany(x => x.ChatRoomMembers)
                 .HasForeignKey(x => x.ChatRoomId);

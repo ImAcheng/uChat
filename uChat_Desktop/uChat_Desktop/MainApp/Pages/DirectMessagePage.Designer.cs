@@ -26,12 +26,12 @@
             splitter1 = new AntdUI.Splitter();
             panelChatHeadsContainer = new AntdUI.Panel();
             panelChatHeads = new AntdUI.Panel();
-            panelActualChats = new Panel();
+            panelActualChats = new AntdUI.Panel();
             panel4 = new Panel();
             label1 = new Label();
             panel3 = new Panel();
             panel2 = new AntdUI.Panel();
-            btnNotifications = new AntdUI.Button();
+            btnFndUsers = new AntdUI.Button();
             btnFriends = new AntdUI.Button();
             panel1 = new AntdUI.Panel();
             panelMainContainer = new AntdUI.Panel();
@@ -101,12 +101,16 @@
             // 
             // panelActualChats
             // 
-            panelActualChats.BackColor = Color.FromArgb(64, 64, 64);
+            panelActualChats.AutoScroll = true;
+            panelActualChats.Back = Color.FromArgb(64, 64, 64);
             panelActualChats.Dock = DockStyle.Fill;
             panelActualChats.Location = new Point(0, 106);
             panelActualChats.Name = "panelActualChats";
+            panelActualChats.Padding = new Padding(0, 0, 0, 10);
+            panelActualChats.Radius = 10;
             panelActualChats.Size = new Size(198, 402);
-            panelActualChats.TabIndex = 3;
+            panelActualChats.TabIndex = 4;
+            panelActualChats.Text = "chats";
             // 
             // panel4
             // 
@@ -140,8 +144,8 @@
             // panel2
             // 
             panel2.Back = Color.FromArgb(64, 64, 64);
-            panel2.Controls.Add(btnNotifications);
             panel2.Controls.Add(btnFriends);
+            panel2.Controls.Add(btnFndUsers);
             panel2.Dock = DockStyle.Top;
             panel2.InnerPadding = new Padding(5);
             panel2.Location = new Point(0, 0);
@@ -150,27 +154,29 @@
             panel2.TabIndex = 0;
             panel2.Text = "panel2";
             // 
-            // btnNotifications
+            // btnFndUsers
             // 
-            btnNotifications.DefaultBack = Color.FromArgb(64, 64, 64);
-            btnNotifications.Dock = DockStyle.Top;
-            btnNotifications.ForeColor = Color.White;
-            btnNotifications.Location = new Point(0, 40);
-            btnNotifications.Name = "btnNotifications";
-            btnNotifications.Size = new Size(198, 40);
-            btnNotifications.TabIndex = 1;
-            btnNotifications.Text = "Notifications";
+            btnFndUsers.DefaultBack = Color.FromArgb(64, 64, 64);
+            btnFndUsers.Dock = DockStyle.Top;
+            btnFndUsers.ForeColor = Color.White;
+            btnFndUsers.Location = new Point(0, 0);
+            btnFndUsers.Name = "btnFndUsers";
+            btnFndUsers.Size = new Size(198, 40);
+            btnFndUsers.TabIndex = 1;
+            btnFndUsers.Text = "Find Users";
+            btnFndUsers.Click += btnFndUsers_Click;
             // 
             // btnFriends
             // 
             btnFriends.DefaultBack = Color.FromArgb(64, 64, 64);
             btnFriends.Dock = DockStyle.Top;
             btnFriends.ForeColor = Color.White;
-            btnFriends.Location = new Point(0, 0);
+            btnFriends.Location = new Point(0, 40);
             btnFriends.Name = "btnFriends";
             btnFriends.Size = new Size(198, 40);
             btnFriends.TabIndex = 0;
             btnFriends.Text = "Friends";
+            btnFriends.Click += btnFriends_Click;
             // 
             // panel1
             // 
@@ -233,9 +239,9 @@
         private AntdUI.Panel panel2;
         private Panel panel3;
         private AntdUI.Button btnFriends;
-        private AntdUI.Button btnNotifications;
+        private AntdUI.Button btnFndUsers;
         private Panel panel4;
         private Label label1;
-        private Panel panelActualChats;
+        private AntdUI.Panel panelActualChats;
     }
 }

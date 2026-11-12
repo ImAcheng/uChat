@@ -1,6 +1,8 @@
-﻿namespace uChat_Desktop.MainApp.Components {
+﻿using uChat_Desktop.MainApp.Pages;
+
+namespace uChat_Desktop.MainApp.Components {
     public partial class ChatLinkButton : UserControl {
-        private readonly Guid _ChatId;
+        public readonly Guid ChatId;
         private string _ChatTitle;
         private bool _isOnline;
         private Bitmap? _Avatar;
@@ -10,10 +12,12 @@
 
         public ChatLinkButton(Guid chatID, string chatTitle, bool isOnline = false, Bitmap? avatar = null) {
             InitializeComponent();
-            _ChatId = chatID;
+            ChatId = chatID;
             _isOnline = isOnline;
             _ChatTitle = chatTitle;
             _Avatar = avatar;
+
+            SetEvent(this);
         }
 
         private void ChatLinkButton_Load(object sender, EventArgs e) {
@@ -32,6 +36,16 @@
             panel1.Back = _DefaultBack;
             lbChatTitle.BackColor = _DefaultBack;
             IsHover = false;
+        }
+
+        private void SetEvent(Control control) {
+            control.Click += Control_Click;
+            foreach (Control ctrl in control.Controls)
+                SetEvent(ctrl);
+        }
+
+        private void Control_Click(object? sender, EventArgs e) {
+            DirectMessagePage.Instance.SwitchToMessage(ChatId, _ChatTitle);
         }
     }
 }

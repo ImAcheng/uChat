@@ -28,8 +28,8 @@ namespace uChat_API.Controllers {
                                      CreateDateTime = r.CreateDateTime,
                                      UpdateDateTime = r.UpdateDateTime
                                  })
-                                 .OrderByDescending(x => x.UpdateDateTime)
-                                 .ThenByDescending(x => x.CreateDateTime)
+                                 .OrderBy(x => x.UpdateDateTime)
+                                 .ThenBy(x => x.CreateDateTime)
                                  .ToListAsync();
 
             return Ok(new { success = true, message = "OK", chat = _result });
@@ -41,10 +41,16 @@ namespace uChat_API.Controllers {
             // check if they have chat
             var ctx = await (from self in _db.ChatRoomMember.Include(x => x.Account).AsNoTracking()
                              where self.AccountId == data.Requester
-                             join r in _db.ChatRoom on self.ChatRoomId equals r.ChatRoomId
-                             join they in _db.ChatRoomMember on r.ChatRoomId equals they.ChatRoomId
+                             join r in _db.ChatRoom.AsNoTracking() on self.ChatRoomId equals r.ChatRoomId
+                             join they in _db.ChatRoomMember.Include(x => x.Account).AsNoTracking() 
+                                on r.ChatRoomId equals they.ChatRoomId
                              where they.AccountId == data.Target && r.ChatRoomType == 0
-                             select new OneToOneChat(r, self.Account, they.Account)).FirstOrDefaultAsync();
+                             select new OneToOneChat(r, self, they)).FirstOrDefaultAsync();
+
+            var accounts = await _db.Account.Where(x => x.AccountId == data.Requester ||
+                            x.AccountId == data.Target)
+                            .AsNoTracking()
+                            .ToDictionaryAsync(x => x.AccountId);
 
             if (ctx == null) {
                 var chat = new ChatRoom() {
@@ -56,32 +62,34 @@ namespace uChat_API.Controllers {
                 var self = new ChatRoomMember() {
                     ChatRoomMemberId = Guid.NewGuid(),
                     AccountId = data.Requester,
-                    ChatRoomId = chat.ChatRoomId,
-                    CreateDateTime = chat.CreateDateTime,
+                    CreateDateTime = chat.CreateDateTime
                 };
 
                 var they = new ChatRoomMember() {
                     ChatRoomMemberId = Guid.NewGuid(),
                     AccountId = data.Target,
-                    ChatRoomId = chat.ChatRoomId,
-                    CreateDateTime = chat.CreateDateTime,
+                    CreateDateTime = chat.CreateDateTime
                 };
 
+                chat.ChatRoomMembers.Add(self);
+                chat.ChatRoomMembers.Add(they);
+
                 try {
-                    await _db.Database.BeginTransactionAsync();
+                    await using var transaction =
+                        await _db.Database.BeginTransactionAsync();
                     await _db.ChatRoom.AddAsync(chat);
-                    await _db.ChatRoomMember.AddAsync(self);
-                    await _db.ChatRoomMember.AddAsync(they);
                     await _db.SaveChangesAsync();
-                    await _db.Database.CommitTransactionAsync();
+                    await transaction.CommitAsync();
                 }
                 catch {
-                    await _db.Database.RollbackTransactionAsync();
-                    return Ok(new { success = false, message = "Sorry! Please try again later." });
+                    return Ok(new {
+                        success = false,
+                        message = "Sorry! Please try again later."
+                    });
                 }
 
-                chat.ChatName = they.Account.Username;
-                ctx = new OneToOneChat(chat, self.Account, they.Account);
+                ctx = new OneToOneChat(chat, self, they);
+                chat.ChatName = accounts[data.Target].Username;
             }
 
             return Ok(new {
@@ -90,9 +98,10 @@ namespace uChat_API.Controllers {
                 chat = new ChatDTO() {
                     ChatId = ctx.Chat!.ChatRoomId,
                     ChatType = 0,
+                    ChatName = ctx.Chat.ChatName ?? ctx.They.Account.Username,
                     Members = new List<AccountDTO>() {
-                        new AccountDTO(ctx.Self!),
-                        new AccountDTO(ctx.They!)
+                        new AccountDTO(accounts[data.Requester]),
+                        new AccountDTO(accounts[data.Target])
                     }
                 }
             });
@@ -106,9 +115,9 @@ namespace uChat_API.Controllers {
 
     public class OneToOneChat {
         public ChatRoom? Chat;
-        public Account? Self, They;
+        public ChatRoomMember? Self, They;
 
-        public OneToOneChat(ChatRoom? chat, Account? self, Account? they) {
+        public OneToOneChat(ChatRoom? chat, ChatRoomMember? self, ChatRoomMember? they) {
             Chat = chat;
             Self = self;
             They = they;

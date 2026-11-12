@@ -13,28 +13,32 @@ namespace uChat_Desktop.MainApp.Pages {
         }
 
         public static DirectMessagePage Instance;
-        FriendAndSearch? FrdSrcGrid;
+        private FriendAndSearch? _FrdSrcGrid;
+        private ChatDisplay? _ChatPage;
 
         private System.Windows.Forms.Timer RenderTimer = new System.Windows.Forms.Timer() {
-            Interval = 50,
+            Interval = 16,
             Enabled = true
         };
 
         private async void DirectMessagePage_Load(object sender, EventArgs e) {
             Instance = this;
-            FrdSrcGrid = new FriendAndSearch {
+            _FrdSrcGrid = new FriendAndSearch {
                 Parent = panelMainContainer,
                 Dock = DockStyle.Fill
             };
-            FrdSrcGrid.Show();
+            _FrdSrcGrid.Show();
 
             var chats = await ChatService.GetChats();
+            panelActualChats.SuspendLayout();
             if (chats != null) {
                 chats.Chat!.ForEach(x => {
-                    AddUserRow(new ChatLinkButton(x.ChatId, x.ChatName));
+                    AddUserRow(new ChatLinkButton(x.ChatId, x.ChatName), false);
                 });
             }
+            panelActualChats.ResumeLayout(true);
 
+            // chat link buttons hover detect
             RenderTimer.Tick += (_, _) => {
                 bool defaultSet = false, hoverSet = false;
                 foreach (var item in panelActualChats.Controls.OfType<ChatLinkButton>()) {
@@ -52,14 +56,53 @@ namespace uChat_Desktop.MainApp.Pages {
             };
         }
 
-        public void AddUserRow(ChatLinkButton row) {
+        /// <summary>
+        /// This is designed to add user rows to the panel correctly.
+        /// This function detects if there's an exists one first.
+        /// </summary>
+        public void AddUserRow(ChatLinkButton row, bool useSuspend = true) {
+            if (panelActualChats.Controls.OfType<ChatLinkButton>().Any(x => x.ChatId == row.ChatId)) {
+                row.Dispose();
+                return;
+            }
+
+            if (useSuspend)
+                panelActualChats.SuspendLayout();
+
             row.Parent = panelActualChats;
+            row.Dock = DockStyle.Top;
             row.SendToBack();
+
+            if (useSuspend)
+                panelActualChats.ResumeLayout(true);
         }
 
-        public void SwitchToMessage(Guid chatId) {
-            FrdSrcGrid?.Dispose();
-            FrdSrcGrid = null;
+        public async void SwitchToMessage(Guid chatId, string name) {
+            _ChatPage?.Dispose();
+            _ChatPage = new ChatDisplay(chatId, name) {
+                Parent = panelMainContainer,
+                Dock = DockStyle.Fill
+            };
+            _ChatPage.BringToFront();
+
+            _FrdSrcGrid?.Dispose();
+            _FrdSrcGrid = null;
+        }
+
+        private void btnFndUsers_Click(object sender, EventArgs e) {
+            if (_FrdSrcGrid != null) return;
+            _FrdSrcGrid = new FriendAndSearch() {
+                Parent = panelMainContainer,
+                Dock = DockStyle.Fill
+            };
+            _FrdSrcGrid.BringToFront();
+
+            _ChatPage?.Dispose();
+            _ChatPage = null;
+        }
+
+        private void btnFriends_Click(object sender, EventArgs e) {
+
         }
     }
 }

@@ -55,6 +55,7 @@ namespace uChat_Desktop.MainApp.Components {
             }
 
             DirectMessagePage.Instance.AddUserRow(new ChatLinkButton(chat.Chat.ChatId, chat.Chat.ChatName ?? "NAME_LOST"));
+            DirectMessagePage.Instance.SwitchToMessage(chat.Chat.ChatId, chat.Chat.ChatName ?? "NAME_LOST");
         }
     }
 }
