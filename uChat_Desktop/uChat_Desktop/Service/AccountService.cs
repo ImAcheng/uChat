@@ -74,8 +74,7 @@ namespace uChat_Desktop.Service {
             };
 
             try {
-                using var client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
-                using var resp = await client.PostAsJsonAsync("api/account/login", rqContent);
+                using var resp = await ApiService.ApiClient.PostAsJsonAsync("api/account/login", rqContent);
 
                 var content = await resp.Content.ReadFromJsonAsync<AccountResult>();
 
@@ -126,8 +125,7 @@ namespace uChat_Desktop.Service {
         /// </summary>
         private static async Task<bool> _DirectLogin(SavedAccount account) {
             try {
-                using HttpClient client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
-                using var resp = await client.PostAsJsonAsync("api/account/d-login", account);
+                using var resp = await ApiService.ApiClient.PostAsJsonAsync("api/account/d-login", account);
                 var content = await resp.Content.ReadFromJsonAsync<AccountResult>();
 
                 if (!content?.success ?? true) {
@@ -153,8 +151,7 @@ namespace uChat_Desktop.Service {
         /// </summary>
         public static async Task<AccountResult?> CallCreateAccount(CreateAccountRequest rq) {
             try {
-                using HttpClient client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
-                using var resp = await client.PostAsJsonAsync("api/account/create", rq);
+                using var resp = await ApiService.ApiClient.PostAsJsonAsync("api/account/create", rq);
 
                 /*
                 if (!resp.IsSuccessStatusCode)
@@ -171,8 +168,7 @@ namespace uChat_Desktop.Service {
             catch (HttpRequestException) {
                 uMessageBox.Show(
                     FormCreateAccount.Instance,
-                    "A network related problem occurred.\n" +
-                    "Please try again later.",
+                    Langs.network_problem,
                     TType.Error);
                 return null;
             }
@@ -210,17 +206,14 @@ namespace uChat_Desktop.Service {
         }
 
         public static async Task<List<AccountDTO>?> FindUsers(string keyword) {
-            using var client = new HttpClient() { BaseAddress = ApiService.RestApiUri };
-
             try {
-                var resp = await client.GetFromJsonAsync<List<AccountDTO>>($"api/account/find/{keyword.Trim()}/{LoggedAccount.Username}");
+                var resp = await ApiService.ApiClient.GetFromJsonAsync<List<AccountDTO>>($"api/account/find/{keyword.Trim()}/{LoggedAccount.Username}");
                 return resp;
             }
             catch (HttpRequestException) {
                 uMessageBox.Show(
                     FormCreateAccount.Instance,
-                    "A network related problem occurred.\n" +
-                    "Please try again later.",
+                    Langs.network_problem,
                     TType.Error);
                 return null;
             }

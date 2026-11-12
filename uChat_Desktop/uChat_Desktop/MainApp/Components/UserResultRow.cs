@@ -1,5 +1,6 @@
 ﻿using AntdUI;
 using uChat_Desktop.Extention;
+using uChat_Desktop.MainApp.Pages;
 using uChat_Desktop.Service;
 
 namespace uChat_Desktop.MainApp.Components {
@@ -53,7 +54,7 @@ namespace uChat_Desktop.MainApp.Components {
                 return;
             }
 
-            MessageBox.Show(chat.Chat!.Members[1].Username);
+            DirectMessagePage.Instance.AddUserRow(new ChatLinkButton(chat.Chat.ChatId, chat.Chat.ChatName ?? "NAME_LOST"));
         }
     }
 }

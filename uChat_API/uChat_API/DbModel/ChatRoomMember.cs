@@ -13,5 +13,6 @@
         public DateTimeOffset? UpdateDateTime { get; set; }
 
         public virtual Account Account { get; set; }
+        public virtual ChatRoom ChatRoom { get; set; }
     }
 }

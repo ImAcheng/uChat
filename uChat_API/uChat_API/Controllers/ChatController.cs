@@ -18,20 +18,28 @@ namespace uChat_API.Controllers {
                                  where a.AccountId == userId
                                  join m in _db.ChatRoomMember.AsNoTracking() on a.AccountId equals m.AccountId
                                  join r in _db.ChatRoom on m.ChatRoomId equals r.ChatRoomId
-                                 join ms in _db.ChatRoomMember on r.ChatRoomId equals ms.ChatRoomId
                                  select new ChatDisplayDTO() {
                                      ChatId = r.ChatRoomId,
-                                     ChatName = r.ChatName ?? ms.Account.Username
-                                 }).ToListAsync();
+                                     ChatName = r.ChatName ?? 
+                                         string.Join(", ",
+                                            r.ChatRoomMembers.Where(x => x.AccountId != userId)
+                                            .Select(x => x.Nickname ?? x.Account.Username)
+                                         ),
+                                     CreateDateTime = r.CreateDateTime,
+                                     UpdateDateTime = r.UpdateDateTime
+                                 })
+                                 .OrderByDescending(x => x.UpdateDateTime)
+                                 .ThenByDescending(x => x.CreateDateTime)
+                                 .ToListAsync();
 
-            return Ok(new { success = true, message = "", chat = _result });
+            return Ok(new { success = true, message = "OK", chat = _result });
         }
 
         [HttpPost("open-by-user")]
         public async Task<IActionResult> OpenChatByUser([FromBody] GeneralChatRequest data) {
             // this is called when users try to open a chat by clicking one's profile
             // check if they have chat
-            var ctx = await (from self in _db.ChatRoomMember.AsNoTracking()
+            var ctx = await (from self in _db.ChatRoomMember.Include(x => x.Account).AsNoTracking()
                              where self.AccountId == data.Requester
                              join r in _db.ChatRoom on self.ChatRoomId equals r.ChatRoomId
                              join they in _db.ChatRoomMember on r.ChatRoomId equals they.ChatRoomId
@@ -72,6 +80,7 @@ namespace uChat_API.Controllers {
                     return Ok(new { success = false, message = "Sorry! Please try again later." });
                 }
 
+                chat.ChatName = they.Account.Username;
                 ctx = new OneToOneChat(chat, self.Account, they.Account);
             }
 

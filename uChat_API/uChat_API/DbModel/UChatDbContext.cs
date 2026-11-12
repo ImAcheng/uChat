@@ -5,7 +5,10 @@ namespace uChat_API.DbModel {
         public UChatDbContext(DbContextOptions<UChatDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
-
+            modelBuilder.Entity<ChatRoomMember>()
+                .HasOne(x => x.ChatRoom)
+                .WithMany(x => x.ChatRoomMembers)
+                .HasForeignKey(x => x.ChatRoomId);
         }
 
         public DbSet<Account> Account { get; set; }

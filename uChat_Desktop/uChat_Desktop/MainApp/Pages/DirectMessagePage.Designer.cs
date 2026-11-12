@@ -26,6 +26,7 @@
             splitter1 = new AntdUI.Splitter();
             panelChatHeadsContainer = new AntdUI.Panel();
             panelChatHeads = new AntdUI.Panel();
+            panelActualChats = new Panel();
             panel4 = new Panel();
             label1 = new Label();
             panel3 = new Panel();
@@ -86,6 +87,7 @@
             // 
             panelChatHeads.Back = Color.FromArgb(64, 64, 64);
             panelChatHeads.BackColor = Color.Transparent;
+            panelChatHeads.Controls.Add(panelActualChats);
             panelChatHeads.Controls.Add(panel4);
             panelChatHeads.Controls.Add(panel3);
             panelChatHeads.Controls.Add(panel2);
@@ -96,6 +98,15 @@
             panelChatHeads.Size = new Size(198, 508);
             panelChatHeads.TabIndex = 0;
             panelChatHeads.Text = "panel2";
+            // 
+            // panelActualChats
+            // 
+            panelActualChats.BackColor = Color.FromArgb(64, 64, 64);
+            panelActualChats.Dock = DockStyle.Fill;
+            panelActualChats.Location = new Point(0, 106);
+            panelActualChats.Name = "panelActualChats";
+            panelActualChats.Size = new Size(198, 402);
+            panelActualChats.TabIndex = 3;
             // 
             // panel4
             // 
@@ -225,5 +236,6 @@
         private AntdUI.Button btnNotifications;
         private Panel panel4;
         private Label label1;
+        private Panel panelActualChats;
     }
 }

@@ -19,11 +19,16 @@
         /// Last Modified Time (including new msg, reaction, etc. for type 0 & 1 only)
         /// </summary>
         public DateTimeOffset? UpdateDateTime { get; set; }
+
+        public virtual ICollection<ChatRoomMember> ChatRoomMembers { get; set; }
+            = new List<ChatRoomMember>();
     }
 
     public class ChatDisplayDTO {
         public Guid ChatId { get; set; }
         public string? ChatName { get; set; }
+        public DateTimeOffset CreateDateTime { get; set; }
+        public DateTimeOffset? UpdateDateTime { get; set; }
     }
 
     public class ChatDTO {

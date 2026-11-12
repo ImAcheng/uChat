@@ -12,9 +12,16 @@ namespace uChat_Desktop.MainApp.Pages {
             _Account = account;
         }
 
-        FriendAndSearch FrdSrcGrid;
+        public static DirectMessagePage Instance;
+        FriendAndSearch? FrdSrcGrid;
+
+        private System.Windows.Forms.Timer RenderTimer = new System.Windows.Forms.Timer() {
+            Interval = 50,
+            Enabled = true
+        };
 
         private async void DirectMessagePage_Load(object sender, EventArgs e) {
+            Instance = this;
             FrdSrcGrid = new FriendAndSearch {
                 Parent = panelMainContainer,
                 Dock = DockStyle.Fill
@@ -24,11 +31,35 @@ namespace uChat_Desktop.MainApp.Pages {
             var chats = await ChatService.GetChats();
             if (chats != null) {
                 chats.Chat!.ForEach(x => {
-                    new ChatLinkButton(x.ChatId, x.ChatName) {
-
-                    };
+                    AddUserRow(new ChatLinkButton(x.ChatId, x.ChatName));
                 });
             }
+
+            RenderTimer.Tick += (_, _) => {
+                bool defaultSet = false, hoverSet = false;
+                foreach (var item in panelActualChats.Controls.OfType<ChatLinkButton>()) {
+                    if (item.ClientRectangle.Contains(item.PointToClient(Cursor.Position))) {
+                        item.SetHighlight();
+                        hoverSet = true;
+                    }
+                    else if (item.IsHover) {
+                        item.SetDefault();
+                        defaultSet = true;
+                    }
+
+                    if (defaultSet & hoverSet) break;
+                }
+            };
+        }
+
+        public void AddUserRow(ChatLinkButton row) {
+            row.Parent = panelActualChats;
+            row.SendToBack();
+        }
+
+        public void SwitchToMessage(Guid chatId) {
+            FrdSrcGrid?.Dispose();
+            FrdSrcGrid = null;
         }
     }
 }

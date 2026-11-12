@@ -71,6 +71,7 @@
             // lbChatTitle
             // 
             lbChatTitle.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            lbChatTitle.BackColor = Color.FromArgb(64, 64, 64);
             lbChatTitle.ForeColor = Color.White;
             lbChatTitle.Location = new Point(53, 14);
             lbChatTitle.Name = "lbChatTitle";
