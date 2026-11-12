@@ -34,10 +34,6 @@
             btnFriends = new AntdUI.Button();
             panel1 = new AntdUI.Panel();
             panelMainContainer = new AntdUI.Panel();
-            panelFrdOrSrch = new Panel();
-            panel5 = new Panel();
-            input1 = new AntdUI.Input();
-            btnFindUser = new AntdUI.Button();
             ((System.ComponentModel.ISupportInitialize)splitter1).BeginInit();
             splitter1.Panel1.SuspendLayout();
             splitter1.Panel2.SuspendLayout();
@@ -47,8 +43,6 @@
             panel4.SuspendLayout();
             panel2.SuspendLayout();
             panel1.SuspendLayout();
-            panelMainContainer.SuspendLayout();
-            panel5.SuspendLayout();
             SuspendLayout();
             // 
             // splitter1
@@ -186,8 +180,6 @@
             // 
             panelMainContainer.Back = Color.FromArgb(60, 60, 60);
             panelMainContainer.BackColor = Color.Transparent;
-            panelMainContainer.Controls.Add(panelFrdOrSrch);
-            panelMainContainer.Controls.Add(panel5);
             panelMainContainer.Dock = DockStyle.Fill;
             panelMainContainer.Location = new Point(3, 3);
             panelMainContainer.Name = "panelMainContainer";
@@ -195,50 +187,6 @@
             panelMainContainer.Size = new Size(630, 504);
             panelMainContainer.TabIndex = 1;
             panelMainContainer.Text = "panel2";
-            // 
-            // panelFrdOrSrch
-            // 
-            panelFrdOrSrch.BackColor = Color.FromArgb(60, 60, 60);
-            panelFrdOrSrch.Dock = DockStyle.Fill;
-            panelFrdOrSrch.Location = new Point(0, 52);
-            panelFrdOrSrch.Name = "panelFrdOrSrch";
-            panelFrdOrSrch.Size = new Size(630, 452);
-            panelFrdOrSrch.TabIndex = 7;
-            // 
-            // panel5
-            // 
-            panel5.Controls.Add(input1);
-            panel5.Controls.Add(btnFindUser);
-            panel5.Dock = DockStyle.Top;
-            panel5.Location = new Point(0, 0);
-            panel5.Name = "panel5";
-            panel5.Size = new Size(630, 52);
-            panel5.TabIndex = 0;
-            // 
-            // input1
-            // 
-            input1.BackColor = Color.FromArgb(72, 72, 72);
-            input1.Dock = DockStyle.Fill;
-            input1.ForeColor = Color.White;
-            input1.Location = new Point(0, 0);
-            input1.Name = "input1";
-            input1.PlaceholderColor = Color.Gray;
-            input1.PlaceholderText = "Find people with their username!";
-            input1.Size = new Size(578, 52);
-            input1.TabIndex = 7;
-            // 
-            // btnFindUser
-            // 
-            btnFindUser.BackColor = Color.FromArgb(72, 72, 72);
-            btnFindUser.DefaultBack = Color.FromArgb(72, 72, 72);
-            btnFindUser.Dock = DockStyle.Right;
-            btnFindUser.ForeColor = Color.White;
-            btnFindUser.IconSvg = "SearchOutlined";
-            btnFindUser.Location = new Point(578, 0);
-            btnFindUser.Name = "btnFindUser";
-            btnFindUser.Size = new Size(52, 52);
-            btnFindUser.TabIndex = 8;
-            btnFindUser.Click += btnFindUser_Click;
             // 
             // DirectMessagePage
             // 
@@ -251,6 +199,7 @@
             Margin = new Padding(4);
             Name = "DirectMessagePage";
             Size = new Size(850, 515);
+            Load += DirectMessagePage_Load;
             splitter1.Panel1.ResumeLayout(false);
             splitter1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitter1).EndInit();
@@ -260,8 +209,6 @@
             panel4.ResumeLayout(false);
             panel2.ResumeLayout(false);
             panel1.ResumeLayout(false);
-            panelMainContainer.ResumeLayout(false);
-            panel5.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -278,9 +225,5 @@
         private AntdUI.Button btnNotifications;
         private Panel panel4;
         private Label label1;
-        private Panel panel5;
-        private Panel panelFrdOrSrch;
-        private AntdUI.Input input1;
-        private AntdUI.Button btnFindUser;
     }
 }

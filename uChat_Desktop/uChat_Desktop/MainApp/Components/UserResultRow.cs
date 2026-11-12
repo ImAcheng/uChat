@@ -2,7 +2,7 @@
     public partial class UserResultRow : UserControl {
         private readonly Guid _ID;
         private readonly string _Username;
-        private static readonly Color _DefaultBack = Color.FromArgb(60, 60, 60);
+        private static readonly Color _DefaultBack = Color.FromArgb(64, 64, 64);
         private static readonly Color _HoverBack = Color.FromArgb(72, 72, 72);
 
         public UserResultRow(Guid accId, string uname) {
@@ -13,19 +13,31 @@
 
         private void UserResultRow_Load(object sender, EventArgs e) {
             lbUsername.Text = _Username;
+            SetDefault();
+        }
 
-            foreach (Control ctrl in this.Controls) {
-                ctrl.MouseEnter += UserResultRow_MouseEnter;
-                ctrl.MouseLeave += UserResultRow_MouseLeave;
+        public bool HighLighted = false;
+            
+        public void SetHighlight() {
+            SetColor(this, _HoverBack);
+            panel1.Show();
+            HighLighted = true;
+        }
+
+        public void SetDefault() {
+            SetColor(this, _DefaultBack);
+            panel1.Hide();
+            HighLighted = false;
+        }
+
+        private void SetColor(Control ctrl, Color color) {
+            foreach (Control c in ctrl.Controls) {
+                c.BackColor = color;
+
+                foreach (Control c2 in c.Controls) {
+                    c2.BackColor = color;
+                }
             }
-        }
-
-        private void UserResultRow_MouseLeave(object? sender, EventArgs e) {
-            this.BackColor = _DefaultBack;
-        }
-
-        private void UserResultRow_MouseEnter(object? sender, EventArgs e) {
-            this.BackColor = _HoverBack;
         }
     }
 }

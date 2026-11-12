@@ -1,7 +1,9 @@
-﻿namespace uChat_API {
+﻿using Microsoft.Data.SqlClient;
+
+namespace uChat_API {
     // I create this file bcuz I don't know what user will do to my program :D
     internal static class DbBase {
-        public static string CreateDb =
+        public static string CreateDbCmd =
             """
             create database uChat;
             use uChat;
@@ -115,5 +117,23 @@
                 UpdateDateTime datetimeoffset
             );
             """;
+
+        public static bool TryCreateDb(string connStr) {
+            try {
+                using var sqlConn = new SqlConnection(connStr);
+                sqlConn.Open();
+
+                foreach (string cmd in CreateDbCmd.Split(";")) {
+                    if (string.IsNullOrWhiteSpace(cmd)) continue;
+                    using var sqlCmd = new SqlCommand(cmd, sqlConn);
+                    sqlCmd.ExecuteNonQuery();
+                }
+
+                sqlConn.Close();
+            }
+            catch { return false; }
+
+            return true;
+        }
     }
 }

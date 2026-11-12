@@ -35,13 +35,6 @@ namespace uChat_Desktop.MainApp {
 
             lbConn.Text = _SubText;
 
-            // I put a delay here bcuz
-            // I want the splash screen to be shown correctly.
-            // Also use task to prevent ui traffic problem
-            await Task.Run(() => {
-                Thread.Sleep(500);
-            });
-
             if (!await _InitConnectionCheck()) {
                 return;
             }

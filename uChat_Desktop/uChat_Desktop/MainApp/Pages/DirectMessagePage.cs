@@ -1,7 +1,5 @@
-﻿using System.Text.Json;
-using uChat_Desktop.DataModel;
-using uChat_Desktop.MainApp.Components;
-using uChat_Desktop.Service;
+﻿using uChat_Desktop.DataModel;
+using uChat_Desktop.MainApp.Grid;
 
 namespace uChat_Desktop.MainApp.Pages {
     public partial class DirectMessagePage : UserControl {
@@ -12,17 +10,14 @@ namespace uChat_Desktop.MainApp.Pages {
             _Account = account;
         }
 
-        private async void btnFindUser_Click(object sender, EventArgs e) {
-            var users = await AccountService.FindUsers(input1.Text);
-            // MessageBox.Show(JsonSerializer.Serialize(users));
-            panelFrdOrSrch.SuspendLayout();
-            users?.ForEach(x => {
-                var row = new UserResultRow(x.AccountId, x.Username) {
-                    Parent = panelFrdOrSrch,
-                    Dock = DockStyle.Top
-                };
-            });
-            panelFrdOrSrch.ResumeLayout();
+        FriendAndSearch FrdSrcGrid;
+
+        private void DirectMessagePage_Load(object sender, EventArgs e) {
+            FrdSrcGrid = new FriendAndSearch {
+                Parent = panelMainContainer,
+                Dock = DockStyle.Fill
+            };
+            FrdSrcGrid.Show();
         }
     }
 }

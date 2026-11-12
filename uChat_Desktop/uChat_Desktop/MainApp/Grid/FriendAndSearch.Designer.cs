@@ -25,7 +25,7 @@
         private void InitializeComponent() {
             panel5 = new Panel();
             input1 = new AntdUI.Input();
-            button1 = new AntdUI.Button();
+            btnFindUsers = new AntdUI.Button();
             panelFrdOrSrch = new Panel();
             panel5.SuspendLayout();
             SuspendLayout();
@@ -33,7 +33,7 @@
             // panel5
             // 
             panel5.Controls.Add(input1);
-            panel5.Controls.Add(button1);
+            panel5.Controls.Add(btnFindUsers);
             panel5.Dock = DockStyle.Top;
             panel5.Location = new Point(0, 0);
             panel5.Name = "panel5";
@@ -52,20 +52,22 @@
             input1.Size = new Size(651, 52);
             input1.TabIndex = 7;
             // 
-            // button1
+            // btnFindUsers
             // 
-            button1.BackColor = Color.FromArgb(72, 72, 72);
-            button1.DefaultBack = Color.FromArgb(72, 72, 72);
-            button1.Dock = DockStyle.Right;
-            button1.ForeColor = Color.White;
-            button1.IconSvg = "SearchOutlined";
-            button1.Location = new Point(651, 0);
-            button1.Name = "button1";
-            button1.Size = new Size(52, 52);
-            button1.TabIndex = 8;
+            btnFindUsers.BackColor = Color.FromArgb(72, 72, 72);
+            btnFindUsers.DefaultBack = Color.FromArgb(72, 72, 72);
+            btnFindUsers.Dock = DockStyle.Right;
+            btnFindUsers.ForeColor = Color.White;
+            btnFindUsers.IconSvg = "SearchOutlined";
+            btnFindUsers.Location = new Point(651, 0);
+            btnFindUsers.Name = "btnFindUsers";
+            btnFindUsers.Size = new Size(52, 52);
+            btnFindUsers.TabIndex = 8;
+            btnFindUsers.Click += btnFindUsers_Click;
             // 
             // panelFrdOrSrch
             // 
+            panelFrdOrSrch.BackColor = Color.FromArgb(64, 64, 64);
             panelFrdOrSrch.Dock = DockStyle.Fill;
             panelFrdOrSrch.Location = new Point(0, 52);
             panelFrdOrSrch.Name = "panelFrdOrSrch";
@@ -80,7 +82,7 @@
             Controls.Add(panelFrdOrSrch);
             Controls.Add(panel5);
             Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             Name = "FriendAndSearch";
             Size = new Size(703, 570);
             Load += FriendAndSearch_Load;
@@ -92,7 +94,7 @@
 
         private Panel panel5;
         private AntdUI.Input input1;
-        private AntdUI.Button button1;
+        private AntdUI.Button btnFindUsers;
         private Panel panelFrdOrSrch;
     }
 }

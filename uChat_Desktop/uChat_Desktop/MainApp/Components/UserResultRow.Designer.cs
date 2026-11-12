@@ -25,6 +25,9 @@
         private void InitializeComponent() {
             lbUsername = new Label();
             panel1 = new Panel();
+            btnGoMsg = new AntdUI.Button();
+            btnAddFrd = new AntdUI.Button();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // lbUsername
@@ -33,18 +36,49 @@
             lbUsername.Location = new Point(0, 0);
             lbUsername.Name = "lbUsername";
             lbUsername.Padding = new Padding(10, 0, 0, 0);
-            lbUsername.Size = new Size(340, 50);
+            lbUsername.Size = new Size(300, 50);
             lbUsername.TabIndex = 0;
             lbUsername.Text = "Username";
             lbUsername.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // panel1
             // 
+            panel1.BackColor = Color.Transparent;
+            panel1.Controls.Add(btnGoMsg);
+            panel1.Controls.Add(btnAddFrd);
             panel1.Dock = DockStyle.Right;
-            panel1.Location = new Point(340, 0);
+            panel1.Location = new Point(300, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(60, 50);
+            panel1.Size = new Size(100, 50);
             panel1.TabIndex = 1;
+            // 
+            // btnGoMsg
+            // 
+            btnGoMsg.BackColor = Color.FromArgb(64, 64, 64);
+            btnGoMsg.DefaultBack = Color.Transparent;
+            btnGoMsg.Dock = DockStyle.Fill;
+            btnGoMsg.Font = new Font("Microsoft JhengHei UI", 15.75F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            btnGoMsg.ForeColor = Color.White;
+            btnGoMsg.IconHoverSvg = "MessageOutlined";
+            btnGoMsg.IconSvg = "MessageOutlined";
+            btnGoMsg.Location = new Point(50, 0);
+            btnGoMsg.Name = "btnGoMsg";
+            btnGoMsg.Size = new Size(50, 50);
+            btnGoMsg.TabIndex = 0;
+            // 
+            // btnAddFrd
+            // 
+            btnAddFrd.BackColor = SystemColors.Control;
+            btnAddFrd.DefaultBack = Color.Transparent;
+            btnAddFrd.Dock = DockStyle.Left;
+            btnAddFrd.Font = new Font("Microsoft JhengHei UI", 15.75F, FontStyle.Regular, GraphicsUnit.Point, 136);
+            btnAddFrd.ForeColor = Color.White;
+            btnAddFrd.IconHoverSvg = "UserAddOutlined";
+            btnAddFrd.IconSvg = "UserAddOutlined";
+            btnAddFrd.Location = new Point(0, 0);
+            btnAddFrd.Name = "btnAddFrd";
+            btnAddFrd.Size = new Size(50, 50);
+            btnAddFrd.TabIndex = 1;
             // 
             // UserResultRow
             // 
@@ -59,6 +93,7 @@
             Name = "UserResultRow";
             Size = new Size(400, 50);
             Load += UserResultRow_Load;
+            panel1.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -66,5 +101,7 @@
 
         private Label lbUsername;
         private Panel panel1;
+        private AntdUI.Button btnGoMsg;
+        private AntdUI.Button btnAddFrd;
     }
 }

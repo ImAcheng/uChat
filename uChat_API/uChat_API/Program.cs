@@ -4,6 +4,7 @@ using uChat_API;
 using uChat_API.DbModel;
 using uChat_API.Websocket;
 
+// Startup Init
 Console.WriteLine("[Info] uChat is now starting, please wait.");
 string? AppBasePath = AppContext.BaseDirectory;
 
@@ -69,26 +70,25 @@ try {
 catch (Exception ex) {
     Console.WriteLine($"[Info] Target database is not exists. Creating now.");
 
-    using var sqlConn = new SqlConnection(ConnStrContext["ConnStr"]);
-    sqlConn.Open();
-
-    foreach (string cmd in DbBase.CreateDb.Split(";")) {
-        if (string.IsNullOrWhiteSpace(cmd)) continue;
-        using var sqlCmd = new SqlCommand(cmd, sqlConn);
-        sqlCmd.ExecuteNonQuery();
+    if (DbBase.TryCreateDb(ConnStrContext["ConnStr"])) {
+        Console.WriteLine("[Info] Database created. Please re-open server again.");
+    }
+    else {
+        Console.WriteLine("[Error] Failed to create database. Please re-open server again.");
     }
 
-    Console.WriteLine("[Info] Database created. Please re-open server again.");
+    
     Console.ReadKey(true);
     return;
 }
+
+builder.WebHost.UseUrls("http://0.0.0.0:5331");
 
 builder.Services.AddDbContext<UChatDbContext>(options =>
         options.UseSqlServer(ConnectionString));
 
 builder.Services.AddSingleton<AccountHandler>();
 builder.Services.AddSingleton<ChatHandler>();
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
