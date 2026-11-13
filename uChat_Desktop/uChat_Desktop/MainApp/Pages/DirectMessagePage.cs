@@ -16,6 +16,8 @@ namespace uChat_Desktop.MainApp.Pages {
         private FriendAndSearch? _FrdSrcGrid;
         private ChatDisplay? _ChatPage;
 
+        private Guid? _CurChatId = null;
+
         private System.Windows.Forms.Timer RenderTimer = new System.Windows.Forms.Timer() {
             Interval = 16,
             Enabled = true
@@ -33,7 +35,7 @@ namespace uChat_Desktop.MainApp.Pages {
             panelActualChats.SuspendLayout();
             if (chats != null) {
                 chats.Chat!.ForEach(x => {
-                    AddUserRow(new ChatLinkButton(x.ChatId, x.ChatName), false);
+                    AddUserRow(new ChatLinkButton(x.ChatId, x.ChatMemberId, x.ChatName ?? "User (Data lost)"), false);
                 });
             }
             panelActualChats.ResumeLayout(true);
@@ -77,9 +79,13 @@ namespace uChat_Desktop.MainApp.Pages {
                 panelActualChats.ResumeLayout(true);
         }
 
-        public async void SwitchToMessage(Guid chatId, string name) {
+        public async void SwitchToMessage(Guid chatId, Guid memberId, string name) {
+            if (chatId == _CurChatId) return;
+
+            _CurChatId = chatId;
+
             _ChatPage?.Dispose();
-            _ChatPage = new ChatDisplay(chatId, name) {
+            _ChatPage = new ChatDisplay(chatId, memberId, name) {
                 Parent = panelMainContainer,
                 Dock = DockStyle.Fill
             };
@@ -99,6 +105,7 @@ namespace uChat_Desktop.MainApp.Pages {
 
             _ChatPage?.Dispose();
             _ChatPage = null;
+            _CurChatId = null;
         }
 
         private void btnFriends_Click(object sender, EventArgs e) {

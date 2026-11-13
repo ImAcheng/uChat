@@ -35,4 +35,17 @@ namespace uChat_API.DbModel {
 
         public DateTimeOffset? UpdateDateTime { get; set; }
     }
+
+    public class MessageDTO {
+        public long MessageNo { get; set; }
+        public Guid ChatId { get; set; }
+        public string SenderName { get; set; }
+        public string? TextContent { get; set; }
+
+        public MessageDTO(ChatMessage msg, string sender) {
+            MessageNo = msg.ChatMessageNo;
+            ChatId = msg.ChatRoomId;
+            TextContent = msg.TextContent;
+        }
+    }
 }

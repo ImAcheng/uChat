@@ -20,6 +20,7 @@ namespace uChat_API.Controllers {
                                  join r in _db.ChatRoom on m.ChatRoomId equals r.ChatRoomId
                                  select new ChatDisplayDTO() {
                                      ChatId = r.ChatRoomId,
+                                     ChatMemberId = m.ChatRoomMemberId,
                                      ChatName = r.ChatName ?? 
                                          string.Join(", ",
                                             r.ChatRoomMembers.Where(x => x.AccountId != userId)
@@ -97,8 +98,9 @@ namespace uChat_API.Controllers {
                 message = "OK",
                 chat = new ChatDTO() {
                     ChatId = ctx.Chat!.ChatRoomId,
+                    ChatMemberId = ctx.Self!.ChatRoomMemberId,
                     ChatType = 0,
-                    ChatName = ctx.Chat.ChatName ?? ctx.They.Account.Username,
+                    ChatName = ctx.Chat.ChatName ?? ctx.They?.Account.Username ?? "Data Lost",
                     Members = new List<AccountDTO>() {
                         new AccountDTO(accounts[data.Requester]),
                         new AccountDTO(accounts[data.Target])

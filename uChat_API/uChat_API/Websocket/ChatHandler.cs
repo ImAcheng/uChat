@@ -87,17 +87,16 @@ namespace uChat_API.Websocket {
             }
 
             switch (request.RequestType) {
-                case "open_chat":
-                    await OpenChat(ws, db, request.AccountId, request.ChatId);
+                case "get_update":
                     break;
 
-                case "read_new_messages":
-                    break;
-
-                case "read_older_messages":
+                case "get_olds":
+                    // this is planned
+                    // which means, the api return the whole chat at once now :D
                     break;
 
                 case "send_message":
+                    await SendMessage(ws, db, request);
                     break;
 
                 case "del_message":
@@ -120,18 +119,36 @@ namespace uChat_API.Websocket {
         }
 
         #region Functions
-        private async Task OpenChat(WebSocket ws, UChatDbContext db, Guid AccountId, Guid ChatId) {
-            var chatMb = await db.ChatRoomMember
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.ChatRoomId == ChatId && r.AccountId == AccountId);
+        private async Task SendMessage(WebSocket ws, UChatDbContext db, ChatWSRequest data) {
+            var msg = new ChatMessage() {
+                ChatMessageId = Guid.NewGuid(),
+                ChatRoomMemberId = data.ChatMemberId,
+                AffiliatedType = 0,
+                ChatRoomId = data.ChatId,
+                TextContent = data.MessageContext,
+                CreateDateTime = DateTimeOffset.Now
+            };
 
-            if (chatMb == null) {
-                await SendDataBack(ws, new { success = false, message = "NO_ACCESS" });
-                return;
+            try {
+                await using var trans = await db.Database.BeginTransactionAsync();
+                await db.ChatMessage.AddAsync(msg);
+                await db.SaveChangesAsync();
+                await trans.CommitAsync();
+            }
+            catch {
+                await SendDataBack(ws, new { success = false, message = "DB_SAVE_FAILED" });
             }
 
-            var chat = await db.ChatRoom.AsNoTracking().FirstOrDefaultAsync(c => c.ChatRoomId == ChatId);
-            
+            msg = await db.ChatMessage.FindAsync(msg.ChatMessageId);
+            var sender = await (from a in db.Account where a.AccountId == data.AccountId select a.Username).FirstOrDefaultAsync();
+
+            try {
+                await SendDataBack(ws, new { success = true, message = "OK", 
+                    msgData = new List<MessageDTO>() { new MessageDTO(msg!, sender!) } });
+            }
+            catch {
+                await SendDataBack(ws, new { success = false, message = "SEND_FAILED" });
+            }
         }
         #endregion
     }
@@ -139,17 +156,12 @@ namespace uChat_API.Websocket {
     public class ChatWSRequest {
         public Guid AccountId { get; set; }
         public Guid ChatId { get; set; }
-        public Guid MessageId { get; set; }
+        public Guid ChatMemberId { get; set; }
         public string RequestType { get; set; } = string.Empty;
-        public string? MessageContext { get; set; }
-    }
 
-    public class MessageDTO {
-        public long MessageNo { get; set; }
-        public string SenderNickname { get; set; } = "User";
-        public Guid? SenderAvatarId { get; set; }   // client get this through FileController
-        public string? TextContent { get; set; }
-        public List<MessageAttachmentDTO>? Attachments { get; set; }
+        public string? MessageContext { get; set; }
+        public Guid? MessageId { get; set; }
+        public long LastReadNo { get; set; }
     }
 
     public class MessageAttachmentDTO {

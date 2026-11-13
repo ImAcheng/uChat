@@ -26,6 +26,7 @@
 
     public class ChatDisplayDTO {
         public Guid ChatId { get; set; }
+        public Guid ChatMemberId { get; set; }
         public string? ChatName { get; set; }
         public DateTimeOffset CreateDateTime { get; set; }
         public DateTimeOffset? UpdateDateTime { get; set; }
@@ -33,6 +34,7 @@
 
     public class ChatDTO {
         public Guid ChatId { get; set; }
+        public Guid ChatMemberId { get; set; }
         public string? ChatName { get; set; }
         public byte ChatType { get; set; }
         public List<AccountDTO> Members { get; set; }

@@ -194,9 +194,10 @@ namespace uChat_Desktop.Service {
 
             try {
                 await ApiService.AccountWebSocket.SendAsync(
-                new ArraySegment<byte>(bytes),
-                WebSocketMessageType.Text,
-                true, CancellationToken.None);
+                    new ArraySegment<byte>(bytes),
+                    WebSocketMessageType.Text,
+                    true, CancellationToken.None
+                );
             }
             catch (WebSocketException) {
                 return false;

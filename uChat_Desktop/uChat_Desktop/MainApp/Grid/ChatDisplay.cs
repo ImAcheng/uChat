@@ -4,11 +4,13 @@ using uChat_Desktop.DataModel;
 namespace uChat_Desktop.MainApp.Grid {
     public partial class ChatDisplay : UserControl {
         public readonly Guid ChatId;
+        private readonly Guid? _CurMemberId = null;
         private readonly string _Name;
 
-        public ChatDisplay(Guid chatId, string name) {
+        public ChatDisplay(Guid chatId, Guid memberId, string name) {
             InitializeComponent();
             ChatId = chatId;
+            _CurMemberId = memberId;
             _Name = name;
         }
 
