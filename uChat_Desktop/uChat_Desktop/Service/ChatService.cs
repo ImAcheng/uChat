@@ -88,12 +88,14 @@ namespace uChat_Desktop.Service {
             return true;
         }
 
-        public async Task<MessageResult?> GetMessages(Guid chatId, Guid memberId) {
+        private static DateTimeOffset _LastChatRequestTime = DateTimeOffset.Now;
+        public async Task<MessageResult?> GetMessages(Guid? chatId, Guid? memberId) {
             var rq = new ChatWSRequest() {
                 AccountId = AccountService.LoggedAccount!.AccountId,
                 ChatId = chatId,
                 ChatMemberId = memberId,
-                RequestType = "get_update"
+                RequestType = "get_update",
+                LastReadTime = _LastChatRequestTime
             };
 
             var json = JsonSerializer.Serialize(rq);
@@ -128,11 +130,25 @@ namespace uChat_Desktop.Service {
 
     public class ChatWSRequest {
         public Guid AccountId { get; set; }
-        public Guid ChatId { get; set; }
-        public Guid ChatMemberId { get; set; }
+        public Guid? ChatId { get; set; }
+        public Guid? ChatMemberId { get; set; }
         public string RequestType { get; set; } = string.Empty;
         public string? MessageContext { get; set; }
         public Guid? MessageId { get; set; }
-        public long LastReadNo { get; set; }
+        public DateTimeOffset? LastReadTime { get; set; }
+    }
+
+    public class ChatWSResult {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "OK";
+        public ChatWSActionType Action { get; set; }
+        public List<MessageDTO>? Data { get; set; }
+    }
+
+    public enum ChatWSActionType {
+        SendMessage,
+        NewMessages,
+        UpdateMessages,
+        DeleteMessages
     }
 }

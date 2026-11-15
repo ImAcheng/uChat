@@ -29,11 +29,14 @@ namespace uChat_API.DbModel {
         /// 1: Edited
         /// 2: Removed
         /// </summary>
-        public byte ModifyStatus { get; set; } = 0;
+        public byte ModifyStatus { get; set; }
 
         public DateTimeOffset CreateDateTime { get; set; }
 
         public DateTimeOffset? UpdateDateTime { get; set; }
+
+        public virtual ChatRoom ChatRoom { get; set; }
+        public virtual ChatRoomMember? ChatRoomMember { get; set; }
     }
 
     public class MessageDTO {
@@ -41,11 +44,13 @@ namespace uChat_API.DbModel {
         public Guid ChatId { get; set; }
         public string SenderName { get; set; }
         public string? TextContent { get; set; }
+        public byte DataType { get; set; } = 0; // 0: default, 1: edit, 2: delete
 
         public MessageDTO(ChatMessage msg, string sender) {
             MessageNo = msg.ChatMessageNo;
             ChatId = msg.ChatRoomId;
             TextContent = msg.TextContent;
+            DataType = msg.ModifyStatus;
         }
     }
 }

@@ -88,6 +88,7 @@ namespace uChat_API.Websocket {
 
             switch (request.RequestType) {
                 case "get_update":
+                    await GetUpdates(ws, db, request);
                     break;
 
                 case "get_olds":
@@ -103,7 +104,10 @@ namespace uChat_API.Websocket {
                     break;
 
                 default:
-                    await SendDataBack(ws, new { success = false, message = "UNKNOWN_TASK" });
+                    await SendDataBack(ws, new ChatWSResult() {
+                        Success = true,
+                        Action = ChatWSActionType.ProProcessing
+                    });
                     break;
             }
         }
@@ -124,52 +128,110 @@ namespace uChat_API.Websocket {
                 ChatMessageId = Guid.NewGuid(),
                 ChatRoomMemberId = data.ChatMemberId,
                 AffiliatedType = 0,
-                ChatRoomId = data.ChatId,
+                ChatRoomId = (Guid)data.ChatId!,
                 TextContent = data.MessageContext,
                 CreateDateTime = DateTimeOffset.Now
             };
 
             try {
                 await using var trans = await db.Database.BeginTransactionAsync();
+
                 await db.ChatMessage.AddAsync(msg);
                 await db.SaveChangesAsync();
+
+                msg.ChatRoom.UpdateDateTime = DateTimeOffset.Now;
+                await db.SaveChangesAsync();
+
                 await trans.CommitAsync();
             }
             catch {
-                await SendDataBack(ws, new { success = false, message = "DB_SAVE_FAILED" });
+                await SendDataBack(ws, new ChatWSResult() {
+                    Success = false,
+                    Message = "DB_SAVE_FAILED",
+                    Action = ChatWSActionType.SendMessage
+                });
+                return;
             }
 
-            msg = await db.ChatMessage.FindAsync(msg.ChatMessageId);
-            var sender = await (from a in db.Account where a.AccountId == data.AccountId select a.Username).FirstOrDefaultAsync();
+            var sender = msg.ChatRoomMember?.Account.Username ?? "DATA_LOST";
 
             try {
-                await SendDataBack(ws, new { success = true, message = "OK", 
-                    msgData = new List<MessageDTO>() { new MessageDTO(msg!, sender!) } });
+                await SendDataBack(ws, new ChatWSResult() {
+                    Success = true,
+                    Action = ChatWSActionType.SendMessage
+                });
             }
             catch {
-                await SendDataBack(ws, new { success = false, message = "SEND_FAILED" });
+                await SendDataBack(ws, new ChatWSResult() {
+                    Success = false,
+                    Message = "SEND_FAILED",
+                    Action = ChatWSActionType.SendMessage
+                });
             }
+        }
+
+        private async Task GetUpdates(WebSocket ws, UChatDbContext db, ChatWSRequest data) {
+            // when ChatID & ChatMemberId is null
+            // it means user is not in a chat (technically)
+            // so we only return new message data
+            // otherwise we return all stuff
+
+            var newMessages = await db.ChatMessage
+                    .AsNoTracking()
+                    .Where(x =>
+                            x.ChatRoom.ChatRoomMembers.Any(m => m.AccountId == data.AccountId) &&
+                            x.CreateDateTime > data.LastReadTime)
+                    .Select(x => new MessageDTO(x, x.ChatRoomMember.Nickname ?? x.ChatRoomMember.Account.Username))
+                    .ToListAsync();
+
+            await SendDataBack(ws, new ChatWSResult() {
+                Success = true,
+                Action = ChatWSActionType.NewMessages,
+                Data = newMessages
+            });
+
+            if (data.ChatId == null) return;
+
+            var newUpdates = await db.ChatMessage
+                .AsNoTracking().
+                Where(x =>
+                        x.ChatRoomId == data.ChatId &&
+                        x.UpdateDateTime > data.LastReadTime &&
+                        x.ModifyStatus != 0)
+                .Select(x => new MessageDTO(x, x.ChatRoomMember.Nickname ?? x.ChatRoomMember.Account.Username))
+                .ToListAsync();
+
+            await SendDataBack(ws, new ChatWSResult() {
+                Success = true,
+                Action = ChatWSActionType.UpdateMessages,
+                Data = newUpdates
+            });
         }
         #endregion
     }
 
     public class ChatWSRequest {
         public Guid AccountId { get; set; }
-        public Guid ChatId { get; set; }
-        public Guid ChatMemberId { get; set; }
+        public Guid? ChatId { get; set; }
+        public Guid? ChatMemberId { get; set; }
         public string RequestType { get; set; } = string.Empty;
 
         public string? MessageContext { get; set; }
         public Guid? MessageId { get; set; }
-        public long LastReadNo { get; set; }
+        public DateTimeOffset? LastReadTime { get; set; }
     }
 
-    public class MessageAttachmentDTO {
-        public Guid FileDataId { get; set; }
-        public byte FileType { get; set; }
-        public byte[]? Thumbnail { get; set; }
+    public class ChatWSResult {
+        public bool Success { get; set; }
+        public string Message { get; set; } = "OK";
+        public ChatWSActionType Action { get; set; }
+        public List<MessageDTO>? Data { get; set; }
+    }
 
-        // if the link wasn't generated, then redirect user to rick roll anyways
-        public string DownloadLink { get; set; } = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";   
+    public enum ChatWSActionType {
+        SendMessage,
+        NewMessages,
+        UpdateMessages,
+        ProProcessing
     }
 }

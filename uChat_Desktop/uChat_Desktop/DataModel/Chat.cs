@@ -35,6 +35,7 @@
         public Guid ChatId { get; set; }
         public string SenderName { get; set; }
         public string? TextContent { get; set; }
+        public byte DataType { get; set; } = 0; // 0: default, 1: edit, 2: delete
     }
 
     public class MessageResult {

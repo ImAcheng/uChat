@@ -16,4 +16,13 @@
 
         public DateTimeOffset? UpdateDateTime { get; set; }
     }
+
+    public class MessageAttachmentDTO {
+        public Guid FileDataId { get; set; }
+        public byte FileType { get; set; }
+        public byte[]? Thumbnail { get; set; }
+
+        // if the link wasn't generated, then redirect user to rick roll anyways
+        public string DownloadLink { get; set; } = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    }
 }
