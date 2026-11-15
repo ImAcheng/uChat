@@ -182,6 +182,7 @@ namespace uChat_API.Websocket {
                             x.ChatRoom.ChatRoomMembers.Any(m => m.AccountId == data.AccountId) &&
                             x.CreateDateTime > data.LastReadTime)
                     .Select(x => new MessageDTO(x, x.ChatRoomMember.Nickname ?? x.ChatRoomMember.Account.Username))
+                    .OrderBy(x => x.CreateDateTime)
                     .ToListAsync();
 
             await SendDataBack(ws, new ChatWSResult() {
@@ -214,10 +215,10 @@ namespace uChat_API.Websocket {
         public Guid AccountId { get; set; }
         public Guid? ChatId { get; set; }
         public Guid? ChatMemberId { get; set; }
+        public Guid? MessageId { get; set; }
         public string RequestType { get; set; } = string.Empty;
 
         public string? MessageContext { get; set; }
-        public Guid? MessageId { get; set; }
         public DateTimeOffset? LastReadTime { get; set; }
     }
 

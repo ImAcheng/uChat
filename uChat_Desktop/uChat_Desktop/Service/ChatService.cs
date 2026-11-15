@@ -67,6 +67,7 @@ namespace uChat_Desktop.Service {
                 AccountId = AccountService.LoggedAccount!.AccountId,
                 ChatId = chatId,
                 ChatMemberId = memberId,
+                MessageId = Guid.NewGuid(),
                 RequestType = "send_message",
                 MessageContext = textContent
             };
@@ -132,9 +133,9 @@ namespace uChat_Desktop.Service {
         public Guid AccountId { get; set; }
         public Guid? ChatId { get; set; }
         public Guid? ChatMemberId { get; set; }
+        public Guid? MessageId { get; set; }
         public string RequestType { get; set; } = string.Empty;
         public string? MessageContext { get; set; }
-        public Guid? MessageId { get; set; }
         public DateTimeOffset? LastReadTime { get; set; }
     }
 

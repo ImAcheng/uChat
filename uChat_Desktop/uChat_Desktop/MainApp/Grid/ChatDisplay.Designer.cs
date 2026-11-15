@@ -28,7 +28,7 @@
             panel1 = new AntdUI.Panel();
             tbMessage = new AntdUI.Input();
             btnSendMsg = new AntdUI.Button();
-            panelMessages = new Panel();
+            panelMessages = new AntdUI.Panel();
             panelTopBar.SuspendLayout();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -89,6 +89,7 @@
             tbMessage.PlaceholderText = "Send some messages!";
             tbMessage.Size = new Size(540, 50);
             tbMessage.TabIndex = 0;
+            tbMessage.KeyDown += tbMessage_KeyDown;
             // 
             // btnSendMsg
             // 
@@ -102,13 +103,17 @@
             btnSendMsg.Name = "btnSendMsg";
             btnSendMsg.Size = new Size(50, 50);
             btnSendMsg.TabIndex = 1;
+            btnSendMsg.Click += btnSendMsg_Click;
             // 
             // panelMessages
             // 
+            panelMessages.AutoScroll = true;
+            panelMessages.Back = Color.FromArgb(64, 64, 64);
             panelMessages.Dock = DockStyle.Fill;
+            panelMessages.InnerPadding = new Padding(0, 0, 0, 3);
             panelMessages.Location = new Point(0, 45);
             panelMessages.Name = "panelMessages";
-            panelMessages.Padding = new Padding(5, 0, 5, 0);
+            panelMessages.Radius = 0;
             panelMessages.Size = new Size(600, 395);
             panelMessages.TabIndex = 2;
             // 
@@ -117,6 +122,7 @@
             AutoScaleDimensions = new SizeF(10F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
+            CausesValidation = false;
             Controls.Add(panelMessages);
             Controls.Add(panel1);
             Controls.Add(panelTopBar);
@@ -138,6 +144,6 @@
         private AntdUI.Input tbMessage;
         private AntdUI.Button btnSendMsg;
         private Label lbName;
-        private Panel panelMessages;
+        private AntdUI.Panel panelMessages;
     }
 }

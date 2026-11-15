@@ -29,7 +29,6 @@
         public Guid ChatMemberId { get; set; }
         public string? ChatName { get; set; }
         public DateTimeOffset CreateDateTime { get; set; }
-        public DateTimeOffset? UpdateDateTime { get; set; }
     }
 
     public class ChatDTO {

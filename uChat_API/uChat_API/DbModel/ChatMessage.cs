@@ -42,15 +42,21 @@ namespace uChat_API.DbModel {
     public class MessageDTO {
         public long MessageNo { get; set; }
         public Guid ChatId { get; set; }
+        public Guid SenderId { get; set; }
         public string SenderName { get; set; }
         public string? TextContent { get; set; }
         public byte DataType { get; set; } = 0; // 0: default, 1: edit, 2: delete
+        public DateTimeOffset CreateDateTime { get; set; }
+        public DateTimeOffset? UpdateDateTime { get; set; }
 
         public MessageDTO(ChatMessage msg, string sender) {
             MessageNo = msg.ChatMessageNo;
             ChatId = msg.ChatRoomId;
+            SenderId = msg.ChatRoomId;
             TextContent = msg.TextContent;
             DataType = msg.ModifyStatus;
+            CreateDateTime = msg.CreateDateTime;
+            UpdateDateTime = msg.UpdateDateTime;
         }
     }
 }

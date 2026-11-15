@@ -26,11 +26,9 @@ namespace uChat_API.Controllers {
                                             r.ChatRoomMembers.Where(x => x.AccountId != userId)
                                             .Select(x => x.Nickname ?? x.Account.Username)
                                          ),
-                                     CreateDateTime = r.CreateDateTime,
-                                     UpdateDateTime = r.UpdateDateTime
+                                     CreateDateTime = r.CreateDateTime
                                  })
-                                 .OrderBy(x => x.UpdateDateTime)
-                                 .ThenBy(x => x.CreateDateTime)
+                                 .OrderBy(x => x.CreateDateTime)
                                  .ToListAsync();
 
             return Ok(new { success = true, message = "OK", chat = _result });
