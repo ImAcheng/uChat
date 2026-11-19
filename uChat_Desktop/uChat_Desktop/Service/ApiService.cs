@@ -28,6 +28,8 @@ namespace uChat_Desktop.Service {
                 !await _StartChatWebSocket())
                 return false;
 
+            ChatService.StartChatReceiveLoop();
+
             IsConnected = true;
             return true;
         }

@@ -39,7 +39,7 @@
             lbUsername.Dock = DockStyle.Top;
             lbUsername.Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 136);
             lbUsername.ForeColor = Color.White;
-            lbUsername.Location = new Point(45, 10);
+            lbUsername.Location = new Point(45, 5);
             lbUsername.Margin = new Padding(5);
             lbUsername.Name = "lbUsername";
             lbUsername.Size = new Size(87, 20);
@@ -49,7 +49,7 @@
             // panel1
             // 
             panel1.Dock = DockStyle.Left;
-            panel1.Location = new Point(45, 30);
+            panel1.Location = new Point(45, 25);
             panel1.Name = "panel1";
             panel1.Size = new Size(2, 20);
             panel1.TabIndex = 2;
@@ -61,7 +61,7 @@
             lbMessage.CausesValidation = false;
             lbMessage.Dock = DockStyle.Fill;
             lbMessage.ForeColor = Color.White;
-            lbMessage.Location = new Point(47, 30);
+            lbMessage.Location = new Point(47, 25);
             lbMessage.Multiline = true;
             lbMessage.Name = "lbMessage";
             lbMessage.ReadOnly = true;
@@ -73,7 +73,7 @@
             // 
             panel2.Controls.Add(imgAvatar);
             panel2.Dock = DockStyle.Left;
-            panel2.Location = new Point(5, 10);
+            panel2.Location = new Point(5, 5);
             panel2.Name = "panel2";
             panel2.Size = new Size(40, 40);
             panel2.TabIndex = 4;
@@ -99,7 +99,7 @@
             Controls.Add(lbUsername);
             Controls.Add(panel2);
             Name = "MessageDisplayer";
-            Padding = new Padding(5, 10, 5, 0);
+            Padding = new Padding(5);
             Size = new Size(600, 50);
             Load += MessageDisplayer_Load;
             SizeChanged += MessageDisplayer_SizeChanged;

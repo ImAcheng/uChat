@@ -12,6 +12,8 @@
         private static readonly Color _NormalColor = Color.White;
         private static readonly Color _InBufColor = Color.Gray;
         private static readonly Color _FailedColor = Color.Red;
+        private static readonly Color _HoverBack = Color.FromArgb(72, 72, 72);
+        private static readonly Color _DefaultBack = Color.FromArgb(64, 64, 64);
 
         public MessageDisplayer(Guid? messageId, Guid senderId, string username, bool useContinue, 
                                 int objIndex, string? text = null, List<Bitmap>? images = null, 
@@ -69,15 +71,7 @@
             UpdateControlHeight();
         }
 
-        private static readonly Padding PaddingWhenContinue = new Padding {
-            Top = 0,
-            Bottom = 0,
-            Left = 5,
-            Right = 5
-        };
-
         private void UpdateControlHeight() {
-            if (_Continue) this.Padding = PaddingWhenContinue;
             int padding = Padding.Top + Padding.Bottom;
             int usernameHeight = lbUsername.PreferredHeight;
             int textHeight = CalculateTextBoxHeight(lbMessage);
@@ -104,13 +98,26 @@
                 flags
             );
 
-            return textSize.Height + 8;
+            return textSize.Height;
         }
 
         private void MessageDisplayer_SizeChanged(object sender, EventArgs e) {
             if (isUpdatingHeight) return;
             UpdateHeight();
             isUpdatingHeight = false;
+        }
+
+        public bool HighLighted = false;
+        public void SetHighlight() {
+            HighLighted = true;
+            this.BackColor = _HoverBack;
+            lbMessage.BackColor = _HoverBack;
+        }
+
+        public void SetDefault() {
+            HighLighted = false;
+            this.BackColor = _DefaultBack;
+            lbMessage.BackColor = _DefaultBack;
         }
     }
 }

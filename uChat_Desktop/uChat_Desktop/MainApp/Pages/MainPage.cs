@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using uChat_Desktop.DataModel;
+﻿using uChat_Desktop.DataModel;
 using uChat_Desktop.Service;
 
 namespace uChat_Desktop.MainApp.Pages {
@@ -19,7 +10,7 @@ namespace uChat_Desktop.MainApp.Pages {
             _Account = AccountService.LoggedAccount;
         }
 
-        private DirectMessagePage dmPage;
+        public DirectMessagePage dmPage;
 
         private void MainPage_Load(object sender, EventArgs e) {
             if (_Account == null) {
@@ -27,7 +18,7 @@ namespace uChat_Desktop.MainApp.Pages {
                 // return;
             }
 
-            dmPage = new  (_Account) {
+            dmPage = new(_Account!) {
                 Parent = panelMain,
                 Dock = DockStyle.Fill,
             };

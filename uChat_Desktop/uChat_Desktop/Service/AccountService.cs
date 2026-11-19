@@ -199,7 +199,8 @@ namespace uChat_Desktop.Service {
                     true, CancellationToken.None
                 );
             }
-            catch (WebSocketException) {
+            catch (Exception ex) {
+                uDebugger.Print($"Exception occurred at UpdateAccountOnlineStatus: {ex.Message}");
                 return false;
             }
 

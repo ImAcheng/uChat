@@ -14,7 +14,7 @@ namespace uChat_Desktop.MainApp.Pages {
 
         public static DirectMessagePage Instance;
         private FriendAndSearch? _FrdSrcGrid;
-        private ChatDisplay? _ChatPage;
+        public ChatDisplay? _ChatPage;
 
         private Guid? _CurChatId = null;
 
