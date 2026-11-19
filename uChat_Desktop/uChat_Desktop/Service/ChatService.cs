@@ -59,15 +59,75 @@ namespace uChat_Desktop.Service {
             }
         }
 
+        private static readonly SemaphoreSlim _wsLock = new(1, 1);
+
+        public static async Task<ChatWSResult?> LoadHistory(Guid chatId) {
+            await _wsLock.WaitAsync();
+
+            try {
+                while (ApiService.ChatWebSocket == null)
+                    await Task.Delay(100);
+
+                var ws = ApiService.ChatWebSocket;
+
+                if (ws.State != WebSocketState.Open)
+                    return null;
+
+                var rq = new ChatWSRequest() {
+                    AccountId = AccountService.LoggedAccount!.AccountId,
+                    ChatId = chatId,
+                    RequestType = "open_chat"
+                };
+
+                var json = JsonSerializer.Serialize(rq);
+                var bytes = Encoding.UTF8.GetBytes(json);
+
+                await ws.SendAsync(
+                    new ArraySegment<byte>(bytes),
+                    WebSocketMessageType.Text,
+                    true,
+                    CancellationToken.None
+                );
+
+                using var ms = new MemoryStream();
+                var buffer = new byte[8192];
+
+                WebSocketReceiveResult result;
+
+                do {
+                    result = await ws.ReceiveAsync(
+                        new ArraySegment<byte>(buffer),
+                        CancellationToken.None
+                    );
+
+                    if (result.MessageType != WebSocketMessageType.Text)
+                        return null;
+
+                    ms.Write(buffer, 0, result.Count);
+
+                } while (!result.EndOfMessage);
+
+                return JsonSerializer.Deserialize<ChatWSResult>(
+                    ms.ToArray()
+                );
+            }
+            catch {
+                return null;
+            }
+            finally {
+                _wsLock.Release();
+            }
+        }
+
         /// <summary>
         /// Send message by websocket.
         /// </summary>
-        public async Task<bool> SendMessage(Guid chatId, Guid memberId, string textContent) {
+        public static async Task<bool> SendMessage(Guid chatId, Guid memberId, Guid messageId, string textContent) {
             var rq = new ChatWSRequest() {
                 AccountId = AccountService.LoggedAccount!.AccountId,
                 ChatId = chatId,
                 ChatMemberId = memberId,
-                MessageId = Guid.NewGuid(),
+                MessageId = messageId,
                 RequestType = "send_message",
                 MessageContext = textContent
             };
@@ -76,17 +136,40 @@ namespace uChat_Desktop.Service {
             var bytes = Encoding.UTF8.GetBytes(json);
 
             try {
+                while (ApiService.ChatWebSocket == null)
+                    await Task.Delay(100);
+
                 await ApiService.ChatWebSocket!.SendAsync(
                     new ArraySegment<byte>(bytes),
                     WebSocketMessageType.Text,
                     true, CancellationToken.None
                 );
+
+                var ws = ApiService.ChatWebSocket;
+
+                using var ms = new MemoryStream();
+                var buffer = new byte[8192];
+
+                WebSocketReceiveResult result;
+
+                do {
+                    result = await ws.ReceiveAsync(
+                        new ArraySegment<byte>(buffer),
+                        CancellationToken.None
+                    );
+
+                    if (result.MessageType != WebSocketMessageType.Text)
+                        return false;
+
+                    ms.Write(buffer, 0, result.Count);
+
+                } while (!result.EndOfMessage);
+
+                return true;
             }
             catch {
                 return false;
             }
-
-            return true;
         }
 
         private static DateTimeOffset _LastChatRequestTime = DateTimeOffset.Now;
@@ -109,7 +192,7 @@ namespace uChat_Desktop.Service {
                     true, CancellationToken.None
                 );
 
-                var buffer = new byte[8192];
+                var buffer = new byte[1024*16];
 
                 var result = await ApiService.ChatWebSocket!.ReceiveAsync(
                     new ArraySegment<byte>(buffer),

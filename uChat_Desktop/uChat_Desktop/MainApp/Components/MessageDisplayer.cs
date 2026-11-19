@@ -59,9 +59,8 @@
             return ObjectIndex;
         }
 
-        public void SetSendingStatus(bool isSuccess, Guid? messageId) {
+        public void SetSendingStatus(bool isSuccess) {
             _InBuffer = false;
-            MessageId = messageId;
             lbMessage.ForeColor = isSuccess ? _NormalColor : _FailedColor;
         }
 

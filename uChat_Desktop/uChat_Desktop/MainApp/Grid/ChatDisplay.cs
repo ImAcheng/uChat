@@ -6,11 +6,9 @@ namespace uChat_Desktop.MainApp.Grid {
     public partial class ChatDisplay : UserControl {
         public readonly Guid ChatId;
         private readonly Guid? _CurMemberId = null;
-        private readonly string _Name;
+        private readonly string _Name;  // represent the chat name
 
-        private List<MessageDisplayer> LoadedMessages = new List<MessageDisplayer>();
-        private Queue<MessageDisplayer> SendingBuffer = new Queue<MessageDisplayer>();
-        private Dictionary<Guid, MessageDisplayer> MsgDict = new Dictionary<Guid, MessageDisplayer>();
+        private Dictionary<Guid, MessageDisplayer> MessageDict = new Dictionary<Guid, MessageDisplayer>();
 
         public ChatDisplay(Guid chatId, Guid memberId, string name) {
             InitializeComponent();
@@ -19,20 +17,27 @@ namespace uChat_Desktop.MainApp.Grid {
             _Name = name;
         }
 
-        private void ChatDisplay_Load(object sender, EventArgs e) {
+        private async void ChatDisplay_Load(object sender, EventArgs e) {
+            if (_CurMemberId == null) {
+                uMessageBox.Show(FormMain.instance, "Oops, something went wrong while opening this chat.", AntdUI.TType.Error);
+                this.Dispose();
+                return;
+            }
+
             lbName.Text = _Name;
             tbMessage.Multiline = true;
-            // MessageBox.Show($"Your member id is: {_CurMemberId}");
+
+            // load history
+            var history = await ChatService.LoadHistory(ChatId);
+            history?.Data?.ForEach(x => AddMessage(x.MessageId, x.TextContent));
         }
 
         #region functions
-        private DateTime _StartSendingTime = DateTime.Now, LastSendingTime = DateTime.Now;
+        private DateTime _StartSendingTime = DateTime.Now;
         private int _SendingTime = 0;
-        private void _SendMsg() {
-            // if (DateTime.Now - LastSendingTime <= TimeSpan.FromMilliseconds(300)) return;
-            // LastSendingTime = DateTime.Now;
-
-            if (DateTime.Now - _StartSendingTime >= TimeSpan.FromSeconds(1)) {
+        private async void _SendMsg() {
+            // Force stop when users send too fast
+            if (DateTime.Now - _StartSendingTime >= TimeSpan.FromSeconds(2)) {
                 _StartSendingTime = DateTime.Now;
                 _SendingTime = 0;
             }
@@ -45,13 +50,24 @@ namespace uChat_Desktop.MainApp.Grid {
                 }
             }
 
+            // create data & add to screen
+            Guid msgId = Guid.NewGuid();
             string text = tbMessage.Text.TrimStart().TrimEnd();
-            AddMessage(text);
+
+            AddMessage(msgId, text);
             tbMessage.Clear();
+
+            // this will firstly return if the message could be sent to server
+            bool sent = await ChatService.SendMessage(ChatId, (Guid)_CurMemberId!, msgId, text);
+
+            if (!sent) {
+                MessageDict[msgId].SetSendingStatus(false);
+            }
         }
 
+        MessageDisplayer? _PrevAddedMsg = null;
         int _ContinueCount = 0;
-        public void AddMessage(string text) {
+        public void AddMessage(Guid msgId, string? text) {
             panelMessages.SuspendLayout();
 
             if (_CurMemberId == null) {
@@ -64,24 +80,22 @@ namespace uChat_Desktop.MainApp.Grid {
                 return;
             }
 
-            var lastMessage = LoadedMessages.Count != 0 ? LoadedMessages.Last() : null;
-            bool useContinue = lastMessage != null && lastMessage.SenderId == _CurMemberId;
+            // check if this message is created by same user & continious count <= 7
+            bool useContinue = _PrevAddedMsg?.SenderId == _CurMemberId && ++_ContinueCount <= 7;
+            if (!useContinue) _ContinueCount = 0;
 
-            if (!useContinue || ++_ContinueCount >= 7) {
-                useContinue = false;
-                _ContinueCount = 0;
-            }
-
-            var msgDisp = new MessageDisplayer(null, (Guid)_CurMemberId,
+            // create & add msg object
+            var msgDisp = new MessageDisplayer(msgId, (Guid)_CurMemberId,
                         AccountService.LoggedAccount!.Username, useContinue,
-                        lastMessage?.ObjectIndex + 1 ?? 0, text: text) {
+                        _PrevAddedMsg?.ObjectIndex + 1 ?? 0, text: text) {
                 Dock = DockStyle.Top
             };
 
             panelMessages.Controls.Add(msgDisp);
-            LoadedMessages.Add(msgDisp);
-            msgDisp.BringToFront();
+            MessageDict.Add(msgId, msgDisp);
+            _PrevAddedMsg = msgDisp;
 
+            msgDisp.BringToFront();
             panelMessages.ResumeLayout(true);
 
             // if (msgDisp.SenderId == _CurMemberId || panelMessages.AutoScrollOffset.Y == panelMessages.Max)
@@ -89,13 +103,14 @@ namespace uChat_Desktop.MainApp.Grid {
         }
         #endregion
 
+        #region send msg actions
         private void btnSendMsg_Click(object sender, EventArgs e) {
             _SendMsg();
         }
 
         private void tbMessage_KeyDown(object sender, KeyEventArgs e) {
-            if (e.KeyCode == Keys.Enter && !e.Shift)
-                _SendMsg();
+            if (e.KeyCode == Keys.Enter && !e.Shift) _SendMsg();
         }
+        #endregion
     }
 }

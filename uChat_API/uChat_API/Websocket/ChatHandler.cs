@@ -87,6 +87,10 @@ namespace uChat_API.Websocket {
             }
 
             switch (request.RequestType) {
+                case "open_chat":
+                    await ReadHistory(ws, db, request);
+                    break;
+
                 case "get_update":
                     await GetUpdates(ws, db, request);
                     break;
@@ -123,9 +127,23 @@ namespace uChat_API.Websocket {
         }
 
         #region Functions
+        private async Task ReadHistory(WebSocket ws, UChatDbContext db, ChatWSRequest data) {
+            var result = await db.ChatMessage
+                    .AsNoTracking()
+                    .Where(x => x.ChatRoomId == data.ChatId)
+                    .OrderBy(x => x.CreateDateTime)
+                    .Select(x => new MessageDTO(x, x.ChatRoomMember.Account.Username))
+                    .ToListAsync();
+
+            await SendDataBack(ws, new ChatWSResult() {
+                Success = true,
+                Data = result
+            });
+        }
+
         private async Task SendMessage(WebSocket ws, UChatDbContext db, ChatWSRequest data) {
             var msg = new ChatMessage() {
-                ChatMessageId = Guid.NewGuid(),
+                ChatMessageId = (Guid)data.MessageId!,
                 ChatRoomMemberId = data.ChatMemberId,
                 AffiliatedType = 0,
                 ChatRoomId = (Guid)data.ChatId!,
@@ -139,17 +157,23 @@ namespace uChat_API.Websocket {
                 await db.ChatMessage.AddAsync(msg);
                 await db.SaveChangesAsync();
 
-                msg.ChatRoom.UpdateDateTime = DateTimeOffset.Now;
-                await db.SaveChangesAsync();
+                await db.ChatRoom
+                    .Where(x => x.ChatRoomId == msg.ChatRoomId)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(x => x.UpdateDateTime, DateTimeOffset.Now));
 
+                await db.SaveChangesAsync();
                 await trans.CommitAsync();
             }
             catch {
+                await db.Database.RollbackTransactionAsync();
+
                 await SendDataBack(ws, new ChatWSResult() {
                     Success = false,
                     Message = "DB_SAVE_FAILED",
                     Action = ChatWSActionType.SendMessage
                 });
+
                 return;
             }
 
@@ -194,8 +218,8 @@ namespace uChat_API.Websocket {
             if (data.ChatId == null) return;
 
             var newUpdates = await db.ChatMessage
-                .AsNoTracking().
-                Where(x =>
+                .AsNoTracking()
+                .Where(x =>
                         x.ChatRoomId == data.ChatId &&
                         x.UpdateDateTime > data.LastReadTime &&
                         x.ModifyStatus != 0)

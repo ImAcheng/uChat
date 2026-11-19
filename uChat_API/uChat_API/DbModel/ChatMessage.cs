@@ -40,7 +40,7 @@ namespace uChat_API.DbModel {
     }
 
     public class MessageDTO {
-        public long MessageNo { get; set; }
+        public Guid MessageId { get; set; }
         public Guid ChatId { get; set; }
         public Guid SenderId { get; set; }
         public string SenderName { get; set; }
@@ -50,7 +50,7 @@ namespace uChat_API.DbModel {
         public DateTimeOffset? UpdateDateTime { get; set; }
 
         public MessageDTO(ChatMessage msg, string sender) {
-            MessageNo = msg.ChatMessageNo;
+            MessageId = msg.ChatMessageId;
             ChatId = msg.ChatRoomId;
             SenderId = msg.ChatRoomId;
             TextContent = msg.TextContent;

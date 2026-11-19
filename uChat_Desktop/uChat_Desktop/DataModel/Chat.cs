@@ -31,11 +31,14 @@
     }
 
     public class MessageDTO {
-        public long MessageNo { get; set; }
+        public Guid MessageId { get; set; }
         public Guid ChatId { get; set; }
+        public Guid SenderId { get; set; }
         public string SenderName { get; set; }
         public string? TextContent { get; set; }
         public byte DataType { get; set; } = 0; // 0: default, 1: edit, 2: delete
+        public DateTimeOffset CreateDateTime { get; set; }
+        public DateTimeOffset? UpdateDateTime { get; set; }
     }
 
     public class MessageResult {

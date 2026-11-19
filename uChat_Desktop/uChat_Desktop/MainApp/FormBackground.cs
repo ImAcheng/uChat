@@ -35,6 +35,7 @@ namespace uChat_Desktop.MainApp {
 
             lbConn.Text = _SubText;
 
+            // connect to services
             if (!await _InitConnectionCheck()) {
                 return;
             }
@@ -56,14 +57,7 @@ namespace uChat_Desktop.MainApp {
             _IsCheckingApiConn = true;
 
             switch (_ConnStatus) {
-                case ConnectionStatus.Initializing or ConnectionStatus.RetryingWhenInit:
-                    // check if application can technically ping API first
-                    if (!await _InitConnectionCheck()) {
-                        _UpdateSubText("Retrying");
-                        _ConnStatus = ConnectionStatus.RetryingWhenInit;
-                        break;
-                    }
-
+                case ConnectionStatus.RetryingWhenInit or ConnectionStatus.RetryingWhenLauch:
                     // try to connect to websockets
                     _ConnStatus = ConnectionStatus.LauchingServices;
                     if (!await ApiService.TryStartWebSockets()) {
@@ -77,17 +71,6 @@ namespace uChat_Desktop.MainApp {
                     _ConnStatus = ConnectionStatus.Connected;
                     await _StartApp();
                     break;
-
-                case ConnectionStatus.RetryingWhenLauch:
-                    if (!await ApiService.TryStartWebSockets()) {
-                        break;
-                    }
-
-                    _ConnStatus = ConnectionStatus.Connected;
-                    await _StartApp();
-
-                    break;
-
 
                 case ConnectionStatus.Connected:
                     if (!await AccountService.UpdateAccountOnlineStatus()) {
@@ -117,15 +100,24 @@ namespace uChat_Desktop.MainApp {
         }
 
         private async Task<bool> _InitConnectionCheck() {
+            _IsCheckingApiConn = true;
+
             ApiService.ApiClient = new HttpClient() { BaseAddress = ApiService.RestApiUri };
 
-            try {
-                await ApiService.ApiClient.GetAsync(string.Empty);
-            }
-            catch (HttpRequestException) {
+            // try to connect to websockets
+            _ConnStatus = ConnectionStatus.LauchingServices;
+            if (!await ApiService.TryStartWebSockets()) {
+                _UpdateSubText("Retrying");
+                _ConnStatus = ConnectionStatus.RetryingWhenLauch;
+                _IsCheckingApiConn = false;
                 return false;
             }
 
+            // all internet services lauched, then start app
+            _UpdateSubText("Lauching");
+            _ConnStatus = ConnectionStatus.Connected;
+
+            _IsCheckingApiConn = false;
             return true;
         }
         #endregion
