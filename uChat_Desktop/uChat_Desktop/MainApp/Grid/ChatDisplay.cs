@@ -45,7 +45,7 @@ namespace uChat_Desktop.MainApp.Grid {
             // load history
             var history = await ChatService.LoadHistory(ChatId);
             panelMessages.SuspendLayout();
-            history?.Data?.ForEach(x => AddMessage(x.MessageId, x.TextContent, useSuspend: false));
+            history?.Data?.ForEach(x => AddMessage(x.MessageId, x.SenderId, x.SenderName, x.TextContent, useSuspend: false));
             panelMessages.ResumeLayout(true);
 
             _UpdateTimer.Interval = 1000;
@@ -75,7 +75,7 @@ namespace uChat_Desktop.MainApp.Grid {
             Guid msgId = Guid.NewGuid();
             string text = tbMessage.Text.TrimStart().TrimEnd();
 
-            AddMessage(msgId, text, inBuffer: true);
+            AddMessage(msgId, _CurMemberId, AccountService.LoggedAccount!.Username, text, inBuffer: true);
             tbMessage.Clear();
 
             // this will firstly return if the message could be sent to server
@@ -90,8 +90,11 @@ namespace uChat_Desktop.MainApp.Grid {
 
         MessageDisplayer? _PrevAddedMsg = null;
         int _ContinueCount = 0;
-        public void AddMessage(Guid msgId, string? text, bool inBuffer = false, bool useSuspend = true) {
-            if (MessageDict.ContainsKey(msgId)) return;
+        public void AddMessage(Guid msgId, Guid senderId, string senderName, string? text, bool inBuffer = false, bool useSuspend = true) {
+            if (MessageDict.ContainsKey(msgId)) {
+                uDebugger.Print($"A conflict happened while adding text: {msgId}");
+                return;
+            }
 
             if (useSuspend)
                 panelMessages.SuspendLayout();
@@ -102,12 +105,12 @@ namespace uChat_Desktop.MainApp.Grid {
             }
 
             // check if this message is created by same user & continious count <= 7
-            bool useContinue = _PrevAddedMsg?.SenderId == _CurMemberId && ++_ContinueCount <= 7;
+            bool useContinue = _PrevAddedMsg?.SenderId == senderId && ++_ContinueCount <= 7;
             if (!useContinue) _ContinueCount = 0;
 
             // create & add msg object
-            var msgDisp = new MessageDisplayer(msgId, _CurMemberId,
-                        AccountService.LoggedAccount!.Username, useContinue,
+            var msgDisp = new MessageDisplayer(msgId, senderId,
+                        senderName, useContinue,
                         _PrevAddedMsg?.ObjectIndex + 1 ?? 0, text: text, inBuffer: inBuffer) {
                 Dock = DockStyle.Top
             };
@@ -129,7 +132,7 @@ namespace uChat_Desktop.MainApp.Grid {
         private async void _UpdateTimer_Tick(object? sender, EventArgs e) {
             var newData = await ChatService.GetMessages(ChatId, _CurMemberId);
             newData?.Data?.ForEach(x => {
-                AddMessage(x.ChatId, x.TextContent);
+                AddMessage(x.MessageId, x.SenderId, x.SenderName, x.TextContent);
             });
         }
 

@@ -52,11 +52,12 @@ namespace uChat_API.DbModel {
         public MessageDTO(ChatMessage msg, string sender) {
             MessageId = msg.ChatMessageId;
             ChatId = msg.ChatRoomId;
-            SenderId = msg.ChatRoomId;
+            SenderId = (Guid)(msg.ChatRoomMemberId ?? msg.ServerMemberId!);
             TextContent = msg.TextContent;
             DataType = msg.ModifyStatus;
             CreateDateTime = msg.CreateDateTime;
             UpdateDateTime = msg.UpdateDateTime;
+            SenderName = sender;
         }
     }
 }

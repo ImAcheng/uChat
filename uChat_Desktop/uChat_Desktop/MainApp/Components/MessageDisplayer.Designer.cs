@@ -26,9 +26,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MessageDisplayer));
             lbUsername = new Label();
             panel1 = new Panel();
-            lbMessage = new TextBox();
             panel2 = new Panel();
             imgAvatar = new PictureBox();
+            lbMessage = new Label();
             panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)imgAvatar).BeginInit();
             SuspendLayout();
@@ -54,21 +54,6 @@
             panel1.Size = new Size(2, 20);
             panel1.TabIndex = 2;
             // 
-            // lbMessage
-            // 
-            lbMessage.BackColor = Color.FromArgb(64, 64, 64);
-            lbMessage.BorderStyle = BorderStyle.None;
-            lbMessage.CausesValidation = false;
-            lbMessage.Dock = DockStyle.Fill;
-            lbMessage.ForeColor = Color.White;
-            lbMessage.Location = new Point(47, 25);
-            lbMessage.Multiline = true;
-            lbMessage.Name = "lbMessage";
-            lbMessage.ReadOnly = true;
-            lbMessage.Size = new Size(548, 20);
-            lbMessage.TabIndex = 3;
-            lbMessage.Text = "Message";
-            // 
             // panel2
             // 
             panel2.Controls.Add(imgAvatar);
@@ -89,6 +74,15 @@
             imgAvatar.TabIndex = 1;
             imgAvatar.TabStop = false;
             // 
+            // lbMessage
+            // 
+            lbMessage.Dock = DockStyle.Top;
+            lbMessage.Location = new Point(47, 25);
+            lbMessage.Name = "lbMessage";
+            lbMessage.Size = new Size(548, 20);
+            lbMessage.TabIndex = 5;
+            lbMessage.Text = "Messages";
+            // 
             // MessageDisplayer
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
@@ -98,6 +92,7 @@
             Controls.Add(panel1);
             Controls.Add(lbUsername);
             Controls.Add(panel2);
+            ForeColor = Color.White;
             Name = "MessageDisplayer";
             Padding = new Padding(5);
             Size = new Size(600, 50);
@@ -112,8 +107,8 @@
         #endregion
         private Label lbUsername;
         private Panel panel1;
-        private TextBox lbMessage;
         private Panel panel2;
         private PictureBox imgAvatar;
+        private Label lbMessage;
     }
 }

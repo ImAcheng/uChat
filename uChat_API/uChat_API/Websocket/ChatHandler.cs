@@ -132,7 +132,8 @@ namespace uChat_API.Websocket {
                     .AsNoTracking()
                     .Where(x => x.ChatRoomId == data.ChatId)
                     .OrderBy(x => x.CreateDateTime)
-                    .Select(x => new MessageDTO(x, x.ChatRoomMember.Account.Username))
+                    .Select(x => new MessageDTO(x, (x.ChatRoomMember != null ?
+                            x.ChatRoomMember.Account.Username : "Server Member")))
                     .ToListAsync();
 
             await SendDataBack(ws, new ChatWSResult() {
@@ -205,11 +206,12 @@ namespace uChat_API.Websocket {
                     .Where(x =>
                         x.ChatRoom.ChatRoomMembers.Any(m =>
                             m.AccountId == data.AccountId) &&
-                        x.CreateDateTime > data.LastReadTime)
+                        x.CreateDateTime >= data.LastReadTime)
                     .OrderBy(x => x.CreateDateTime)
                     .Select(x => new MessageDTO(
                         x,
-                        x.ChatRoomMember.Account.Username
+                        (x.ChatRoomMember != null ?
+                            x.ChatRoomMember.Account.Username : "Server Member")
                     ))
                     .ToListAsync();
 

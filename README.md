@@ -1,4 +1,5 @@
 # uChat
+![alt text](readsrc/find_user.png)
 * Version: Indev
 
 ## What is uChat?
@@ -19,7 +20,7 @@ uChat is a self-hosted chatting system allowing you to setup your own server.
 
 ## Requirement
 * Microsoft SQL Server Database (versions >= 2022 are recommanded)
-* .NET 8 Desktop Runtime (for Windows)
+* .NET 9 Desktop Runtime (for Windows)
 
 ## Other Information
-You can check API_DOC.md for more information about the API.
+You can check API_DOCS.md for more information about the API.

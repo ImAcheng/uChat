@@ -80,7 +80,7 @@
             Height = totalHeight + padding;
         }
 
-        private int CalculateTextBoxHeight(TextBox textBox) {
+        private int CalculateTextBoxHeight(Label textBox) {
             int width = textBox.ClientSize.Width;
 
             if (width <= 0)
