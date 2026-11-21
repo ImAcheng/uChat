@@ -33,6 +33,7 @@
         }
 
         private void MessageDisplayer_Load(object sender, EventArgs e) {
+            if (IsDisposed || Disposing || lbUsername.IsDisposed || lbUsername.Disposing) return;
             lbUsername.Text = _Username;
             lbMessage.Text = _Text;
             if (_InBuffer) lbMessage.ForeColor = _InBufColor;

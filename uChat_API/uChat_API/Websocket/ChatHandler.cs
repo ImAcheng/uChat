@@ -24,7 +24,7 @@ namespace uChat_API.Websocket {
 
             var buffer = new byte[1024 * 8];
 
-            Console.WriteLine("[Debug] A client connected to Chat Websocket.");
+            Console.WriteLine("[Info] A client connected to Chat Websocket.");
 
             try {
                 while (websocket.State == WebSocketState.Open) {

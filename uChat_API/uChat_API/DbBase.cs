@@ -1,13 +1,11 @@
 ﻿using Microsoft.Data.SqlClient;
+using uChat_API.Helper;
 
 namespace uChat_API {
     // I create this file bcuz I don't know what user will do to my program :D
     internal static class DbBase {
         public static string CreateDbCmd =
             """
-            create database uChat;
-            use uChat;
-
             create table Account (
                 AccountId uniqueidentifier not null primary key,
                 AccountNo bigint identity(1, 1) not null,
@@ -118,12 +116,16 @@ namespace uChat_API {
             );
             """;
 
-        public static bool TryCreateDb(string connStr) {
+        public static bool TryCreateDb(string connStr, string dbName) {
             try {
                 using var sqlConn = new SqlConnection(connStr);
                 sqlConn.Open();
 
-                foreach (string cmd in CreateDbCmd.Split(";")) {
+                string acutalCmd = $"create database {dbName};" + 
+                                   $"use {dbName};" + 
+                                   CreateDbCmd;
+
+                foreach (string cmd in acutalCmd.Split(";")) {
                     if (string.IsNullOrWhiteSpace(cmd)) continue;
                     using var sqlCmd = new SqlCommand(cmd, sqlConn);
                     sqlCmd.ExecuteNonQuery();
@@ -131,7 +133,10 @@ namespace uChat_API {
 
                 sqlConn.Close();
             }
-            catch { return false; }
+            catch (Exception ex) {
+                uPrint.Error(true, ex.Message);
+                return false; 
+            }
 
             return true;
         }

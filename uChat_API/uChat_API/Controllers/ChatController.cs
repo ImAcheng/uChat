@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using uChat_API.DbModel;
+using uChat_API.Helper;
 
 namespace uChat_API.Controllers {
     [Route("api/[controller]")]
@@ -14,6 +15,8 @@ namespace uChat_API.Controllers {
 
         [HttpGet("get-chats/{userId:guid}")]
         public async Task<IActionResult> GetChats([FromRoute] Guid userId) {
+            uPrint.Info(true, "User", userId.ToString(), "requested to get chats.");
+
             var _result = await (from a in _db.Account.AsNoTracking()
                                  where a.AccountId == userId
                                  join m in _db.ChatRoomMember.AsNoTracking() on a.AccountId equals m.AccountId
@@ -36,6 +39,8 @@ namespace uChat_API.Controllers {
 
         [HttpPost("open-by-user")]
         public async Task<IActionResult> OpenChatByUser([FromBody] GeneralChatRequest data) {
+            uPrint.Info(true, "User", data.Requester.ToString(), "requested to open chat with", data.Target.ToString());
+
             // this is called when users try to open a chat by clicking one's profile
             // check if they have chat
             var ctx = await (from self in _db.ChatRoomMember.Include(x => x.Account).AsNoTracking()

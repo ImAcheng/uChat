@@ -2,43 +2,58 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using uChat_API;
 using uChat_API.DbModel;
+using uChat_API.Helper;
 using uChat_API.Websocket;
 
 // Startup Init
-Console.WriteLine("[Info] uChat is now starting, please wait.");
+uPrint.Info(true, "uChat is now starting, please wait");
 string? AppBasePath = AppContext.BaseDirectory;
 
+// check base path
 if (AppBasePath == null) {
-    Console.WriteLine("[Error] Application base path is no accessible.");
+    uPrint.Error(true, "Application base path is not accessible");
     Console.ReadKey(true);
     return;
 }
 
-string? ConnectionStringPath = Path.Combine(AppBasePath, "ConnStr.ucdata");
-if (!Path.Exists(ConnectionStringPath)) {
-    Console.WriteLine($"[Error] Connection string properties file is not exists.\n" +
-        $"Please create it at {ConnectionStringPath}");
-    Console.ReadKey(true);
-    return;
-}
+// check properties file
+string? PropertiesFilePath = Path.Combine(AppBasePath, "properties", "server.ucprop");
+if (!Path.Exists(PropertiesFilePath)) {
+    uPrint.Info(true, "Initializing server properties");
 
-string[] propVerified = { "ConnStr", "Database" };
-string[] connFileCtx = File.ReadAllText(ConnectionStringPath).Trim().Split("\n");
-Dictionary<string, string> ConnStrContext = new Dictionary<string, string>();
-foreach (string line in connFileCtx) {
-    string[] ctx = line.Split("=>");
-
-    if (ctx.Length != 2) {
-        Console.WriteLine("[Error] Wrong connection string properties format.");
+    try {
+        Directory.CreateDirectory(Path.Combine(AppBasePath, "properties"));
+        File.Create(PropertiesFilePath).Close();
+    }
+    catch {
+        uPrint.Error(true, "Cannot initialize properties");
         Console.ReadKey(true);
-        return;
     }
 
-    ConnStrContext[ctx[0]] = ctx[1];
+    bool _is = await PropertiesManager.Init(PropertiesFilePath);
+
+    if (!_is) {
+        uPrint.Error(true, "Cannot initialize properties");
+        Console.ReadKey(true);
+    }
+
+    uPrint.Warning(true, $"uChat Server was just initialized. Please configure server settings in {PropertiesFilePath}");
+    Console.ReadKey(true);
+    return;
 }
 
-if (!propVerified.All(ConnStrContext.ContainsKey)) {
-    Console.WriteLine("[Error] Wrong connection string properties format.");
+bool propChk = await PropertiesManager.Check(PropertiesFilePath);
+if (!propChk) {
+    uPrint.Info(true, "Initializing server properties");
+
+    bool _is = await PropertiesManager.Init(PropertiesFilePath);
+
+    if (!_is) {
+        uPrint.Error(true, "Cannot initialize properties");
+        Console.ReadKey(true);
+    }
+
+    uPrint.Warning(true, $"uChat Server was just initialized. Please configure server settings in {PropertiesFilePath}");
     Console.ReadKey(true);
     return;
 }
@@ -49,32 +64,35 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Test if server is connectable
+var prop = PropertiesManager.Properties;
+string svrConnStr = $"Data Source={prop["dbDataSource"]};" +
+                $"Integrated Security={prop["dbIntegratedSecurity"]};" +
+                $"Encrypt={prop["dbEncrypt"]};" +
+                $"TrustServerCertificate={prop["dbTrustServerCertificate"]};";
 try {
-    using var sqlConn = new SqlConnection(ConnStrContext["ConnStr"]);
+    using var sqlConn = new SqlConnection(svrConnStr);
     sqlConn.Open();
 }
 catch (Exception ex) {
-    Console.WriteLine($"[Error] Cannot open connection to the SQL Server.");
+    uPrint.Error(true, $"Cannot open connection to the SQL Server ({ex.Message})");
     Console.ReadKey(true);
     return;
 }
 
-string ConnectionString;
-
 // Test if target db is connectable
+string dbConnStr = svrConnStr + $"Database={prop["databaseName"]}";
 try {
-    ConnectionString = ConnStrContext["ConnStr"] + ConnStrContext["Database"];
-    using var sqlConn = new SqlConnection(ConnectionString);
+    using var sqlConn = new SqlConnection(dbConnStr);
     sqlConn.Open();
 }
-catch (Exception ex) {
-    Console.WriteLine($"[Info] Target database is not exists. Creating now.");
+catch (Exception) {
+    uPrint.Info(true, "Target database is not exists. Creating now");
 
-    if (DbBase.TryCreateDb(ConnStrContext["ConnStr"])) {
-        Console.WriteLine("[Info] Database created. Please re-open server again.");
+    if (DbBase.TryCreateDb(svrConnStr, prop["databaseName"])) {
+        uPrint.Info(true, "Database created. Please re-open server again");
     }
     else {
-        Console.WriteLine("[Error] Failed to create database. Please re-open server again.");
+        uPrint.Error(true, $"Failed to create database. Please re-open server again");
     }
 
     
@@ -82,10 +100,18 @@ catch (Exception ex) {
     return;
 }
 
-builder.WebHost.UseUrls("http://0.0.0.0:5331");
+builder.WebHost.UseUrls($"http://{prop["targetIp"]}:{prop["port"]}");
 
-builder.Services.AddDbContext<UChatDbContext>(options =>
-        options.UseSqlServer(ConnectionString));
+builder.Services.AddDbContext<UChatDbContext>(options => {
+    options.UseSqlServer(dbConnStr);
+    options.LogTo(_ => { });
+});
+
+// this stops EntityFrameworkCore from printing messages
+// builder.Logging.AddFilter(
+//     "Microsoft.EntityFrameworkCore.Database.Command",
+//     LogLevel.None
+// );
 
 builder.Services.AddSingleton<AccountHandler>();
 builder.Services.AddSingleton<ChatHandler>();

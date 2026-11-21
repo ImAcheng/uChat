@@ -23,4 +23,4 @@ uChat is a self-hosted chatting system allowing you to setup your own server.
 * .NET 9 Desktop Runtime (for Windows)
 
 ## Other Information
-You can check API_DOCS.md for more information about the API.
+You can check [API_DOCS.md](API_DOCS.md) for more information about the API.
