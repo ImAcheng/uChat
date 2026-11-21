@@ -45,7 +45,10 @@ namespace uChat_Desktop.MainApp.Grid {
             // load history
             var history = await ChatService.LoadHistory(ChatId);
             panelMessages.SuspendLayout();
-            history?.Data?.ForEach(x => AddMessage(x.MessageId, x.SenderId, x.SenderName, x.TextContent, useSuspend: false));
+            foreach (var x in history?.Data ?? []) {
+                AddMessage(x.MessageId, x.SenderId, x.SenderName, x.TextContent, useSuspend: false);
+            }
+            panelMessages.ScrollControlIntoView(_PrevAddedMsg);
             panelMessages.ResumeLayout(true);
 
             _UpdateTimer.Interval = 1000;
@@ -58,7 +61,7 @@ namespace uChat_Desktop.MainApp.Grid {
         private int _SendingTime = 0;
         private async void _SendMsg() {
             // Force stop when users send too fast
-            if (DateTime.Now - _StartSendingTime >= TimeSpan.FromSeconds(2)) {
+            if (DateTime.Now - _StartSendingTime >= TimeSpan.FromSeconds(1.25)) {
                 _StartSendingTime = DateTime.Now;
                 _SendingTime = 0;
             }
@@ -76,6 +79,7 @@ namespace uChat_Desktop.MainApp.Grid {
             string text = tbMessage.Text.TrimStart().TrimEnd();
 
             AddMessage(msgId, _CurMemberId, AccountService.LoggedAccount!.Username, text, inBuffer: true);
+            panelMessages.ScrollControlIntoView(_PrevAddedMsg);
             tbMessage.Clear();
 
             // this will firstly return if the message could be sent to server
@@ -90,23 +94,31 @@ namespace uChat_Desktop.MainApp.Grid {
 
         MessageDisplayer? _PrevAddedMsg = null;
         int _ContinueCount = 0;
-        public void AddMessage(Guid msgId, Guid senderId, string senderName, string? text, bool inBuffer = false, bool useSuspend = true) {
+        public void AddMessage(Guid msgId, Guid senderId, string senderName, 
+                               string? text, bool inBuffer = false, 
+                               bool useSuspend = true) {
+
             if (MessageDict.ContainsKey(msgId)) {
                 uDebugger.Print($"A conflict happened while adding text: {msgId}");
                 return;
             }
 
-            if (useSuspend)
-                panelMessages.SuspendLayout();
+            if (useSuspend) panelMessages.SuspendLayout();
 
             if (string.IsNullOrWhiteSpace(text)) {
-                panelMessages.ResumeLayout();
+                if (useSuspend) panelMessages.ResumeLayout(true);
                 return;
             }
 
-            // check if this message is created by same user & continious count <= 7
-            bool useContinue = _PrevAddedMsg?.SenderId == senderId && ++_ContinueCount <= 7;
-            if (!useContinue) _ContinueCount = 0;
+            // check if this message is created by same user & continious count <= 10
+            bool useContinue = _PrevAddedMsg?.SenderId == senderId && ++_ContinueCount <= 10;
+            if (!useContinue) {
+                _ContinueCount = 0;
+                var space = new Panel() { Height = 10, Dock = DockStyle.Top };
+
+                panelMessages.Add(space); 
+                space.BringToFront();
+            }
 
             // create & add msg object
             var msgDisp = new MessageDisplayer(msgId, senderId,
@@ -115,17 +127,15 @@ namespace uChat_Desktop.MainApp.Grid {
                 Dock = DockStyle.Top
             };
 
-            panelMessages.Controls.Add(msgDisp);
+            
             MessageDict.Add(msgId, msgDisp);
             _PrevAddedMsg = msgDisp;
 
+            panelMessages.Add(msgDisp);
             msgDisp.BringToFront();
 
             if (useSuspend)
                 panelMessages.ResumeLayout(true);
-
-            // if (msgDisp.SenderId == _CurMemberId || panelMessages.AutoScrollOffset.Y == panelMessages.Max)
-            panelMessages.ScrollControlIntoView(msgDisp);
         }
         #endregion
 
@@ -134,6 +144,14 @@ namespace uChat_Desktop.MainApp.Grid {
             newData?.Data?.ForEach(x => {
                 AddMessage(x.MessageId, x.SenderId, x.SenderName, x.TextContent);
             });
+        }
+
+        public void FullDispose() {
+            this.Dispose();
+            MessageDict.Clear();
+            panelMessages.Controls.Clear();
+            _RenderTimer.Dispose();
+            _UpdateTimer.Dispose();
         }
 
         #region send msg actions

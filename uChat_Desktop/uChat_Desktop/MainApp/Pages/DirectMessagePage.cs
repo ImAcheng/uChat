@@ -84,7 +84,7 @@ namespace uChat_Desktop.MainApp.Pages {
 
             _CurChatId = chatId;
 
-            _ChatPage?.Dispose();
+            _ChatPage?.FullDispose();
             _ChatPage = new ChatDisplay(chatId, memberId, name) {
                 Parent = panelMainContainer,
                 Dock = DockStyle.Fill
