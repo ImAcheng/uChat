@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using AntdUI;
+using System.Diagnostics;
 using uChat_Desktop.Service;
 
 namespace uChat_Desktop.MainApp {
@@ -10,37 +11,41 @@ namespace uChat_Desktop.MainApp {
             InitializeComponent();
         }
 
-        private System.Windows.Forms.Timer ApiChecksTimer = 
-            new System.Windows.Forms.Timer() { Interval = 5000 };
-
-        private System.Windows.Forms.Timer AnimationTimer = 
-            new System.Windows.Forms.Timer() { Interval = 500 };
+        private System.Windows.Forms.Timer ApiChecksTimer = new() { Interval = 5000 };
+        private System.Windows.Forms.Timer AnimationTimer = new() { Interval = 500 };
+        private System.Windows.Forms.Timer IpInputTimer = new() { Interval = 300 };
 
         private FormMain? formMain;
 
         // to store if app was started already to prevent re-open a new window
         bool _IsAppStarted = false;
 
-        private string _SubText = "Connecting";
+        private string _SubText = "";
 
         private async void FormBackground_Load(object sender, EventArgs e) {
             FileService.Init();
 
             ApiChecksTimer.Tick += ApiChecksTimer_Tick;
-            ApiChecksTimer.Enabled = true;
             AnimationTimer.Tick += AnimationTimer_Tick;
-            AnimationTimer.Enabled = true;
+            IpInputTimer.Tick += IpInputTimer_Tick;
 
             _AddDraggingEvent(this.Controls);
 
-            lbConn.Text = _SubText;
+            string ipFileFp = FileService.MakePath(FileService.GetPathOf(FileService.CommanPath.Server));
+            if (FileService.ConfirmFile(ipFileFp)) {
+                using var sw = new StreamReader(ipFileFp);
+                var ipCtx = await sw.ReadLineAsync();
+                ipCtx = ipCtx?.Trim();
 
-            // connect to services
-            if (!await _InitConnectionCheck()) {
-                return;
+                if (!string.IsNullOrWhiteSpace(ipCtx)) {
+                    ApiService.ApiAddress = ipCtx!;
+                    ApiService.RestApiUri = new($"http://{ipCtx!}");
+                    ApiService.ApiClient = new() { BaseAddress = ApiService.RestApiUri };
+                    tbIP.Text = ipCtx;
+                }
             }
 
-            await _StartApp();
+            lbConn.Text = _SubText;
         }
 
         byte _DotsCount = 0;
@@ -215,6 +220,65 @@ namespace uChat_Desktop.MainApp {
 
         private async void FormBackground_FormClosing(object sender, FormClosingEventArgs e) {
             await ApiService.CloseAllWebSockets();
+        }
+
+        #region IP Input & Update
+        private async void IpInputTimer_Tick(object? sender, EventArgs e) {
+            string? target = tbIP.Text;
+            bool valid = ApiService.TryConvertIP(target, out target);
+
+            if (!valid) {
+                tbIP.Status = TType.Error;
+                return;
+            }
+
+            try {
+                ApiService.ApiAddress = target!;
+                ApiService.RestApiUri = new($"http://{target!}");
+                ApiService.ApiClient = new() { BaseAddress = ApiService.RestApiUri };
+            }
+            catch {
+                tbIP.Status = TType.Error;
+                return;
+            }
+
+            tbIP.Status = TType.Success;
+
+            var fp = FileService.MakePath(FileService.GetPathOf(FileService.CommanPath.Server));
+            FileService.ConfirmFile(fp);
+            using var sr = new StreamWriter(fp);
+            await sr.WriteLineAsync(target);
+        }
+
+        private void tbIP_TextChanged(object sender, EventArgs e) {
+            IpInputTimer.Stop();
+            IpInputTimer.Start();
+        }
+        #endregion
+
+        private async void btnStartConnect_Click(object sender, EventArgs e) {
+            if (tbIP.Status != TType.Success) return;
+
+            AnimationTimer.Enabled = true;
+            btnStartConnect.Loading = true;
+            _UpdateSubText("Connecting");
+
+            // connect to services
+            bool connTest = await _InitConnectionCheck();
+            btnStartConnect.Loading = false;
+
+            if (!connTest) {
+                _UpdateSubText("Connection Failed");
+                AnimationTimer.Stop();
+                return;
+            }
+
+            lbInputHint.Hide();
+            tbIP.Hide();
+            btnStartConnect.Hide();
+            
+            ApiChecksTimer.Enabled = true;
+            await _StartApp();
         }
     }
 

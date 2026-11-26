@@ -13,7 +13,7 @@ using uChat_Desktop.Extention;
 using uChat_Desktop.Login;
 
 namespace uChat_Desktop.Service {
-    internal class AccountService {
+    public interface AccountService {
         public static AccountDTO? LoggedAccount = null;
 
         private readonly static ISerializer _YamlSerializer =
@@ -262,7 +262,7 @@ namespace uChat_Desktop.Service {
         }
     }
 
-    internal class AccountResult {
+    public class AccountResult {
         public bool success { get; set; }
         public string message { get; set; } = string.Empty;
         public AccountDTO? account { get; set; }

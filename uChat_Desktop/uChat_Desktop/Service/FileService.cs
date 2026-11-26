@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
+﻿using System.Diagnostics;
 
 namespace uChat_Desktop.Service {
-    internal class FileService {
+    public interface FileService {
         private readonly static string _AppFileRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ".uChat");
+
+
+        public enum CommanPath {
+            AppConfig, AccountConfig, Server
+        }
+
+        private static Dictionary<CommanPath, string[]> _Path = new () {
+            { CommanPath.Server, new[] { "Config", "Servers.ucprop" } },
+            { CommanPath.AccountConfig, new[] {"SavedLogin."}  }
+        };
 
         /// <summary>
         ///     Call this when program start.
@@ -19,6 +26,10 @@ namespace uChat_Desktop.Service {
             ConfirmDir(_AppFileRoot);
             ConfirmDir(MakePath("Config"));
             ConfirmDir(MakePath("Chat"));
+        }
+
+        public static string[] GetPathOf(CommanPath cp) {
+            return _Path[cp];
         }
 
         /// <summary>
@@ -38,10 +49,10 @@ namespace uChat_Desktop.Service {
         public static bool ConfirmDir(string dirPath) {
             if (!Directory.Exists(dirPath)) {
                 Directory.CreateDirectory(dirPath);
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>

@@ -25,12 +25,17 @@
         private void InitializeComponent() {
             panelServers = new AntdUI.Panel();
             panelMain = new Panel();
+            panelFnBtn = new Panel();
+            btnAppSetting = new AntdUI.Button();
+            panelServers.SuspendLayout();
+            panelFnBtn.SuspendLayout();
             SuspendLayout();
             // 
             // panelServers
             // 
             panelServers.AutoScroll = true;
             panelServers.Back = Color.FromArgb(68, 68, 68);
+            panelServers.Controls.Add(panelFnBtn);
             panelServers.Dock = DockStyle.Left;
             panelServers.Location = new Point(0, 0);
             panelServers.Name = "panelServers";
@@ -48,6 +53,27 @@
             panelMain.Size = new Size(850, 515);
             panelMain.TabIndex = 1;
             // 
+            // panelFnBtn
+            // 
+            panelFnBtn.Controls.Add(btnAppSetting);
+            panelFnBtn.Dock = DockStyle.Bottom;
+            panelFnBtn.Location = new Point(0, 415);
+            panelFnBtn.Name = "panelFnBtn";
+            panelFnBtn.Size = new Size(50, 100);
+            panelFnBtn.TabIndex = 0;
+            // 
+            // btnAppSetting
+            // 
+            btnAppSetting.DefaultBack = Color.FromArgb(68, 68, 68);
+            btnAppSetting.Dock = DockStyle.Bottom;
+            btnAppSetting.ForeColor = Color.White;
+            btnAppSetting.IconSvg = "SettingOutlined";
+            btnAppSetting.Location = new Point(0, 50);
+            btnAppSetting.Name = "btnAppSetting";
+            btnAppSetting.Size = new Size(50, 50);
+            btnAppSetting.TabIndex = 0;
+            btnAppSetting.Click += btnAppSetting_Click;
+            // 
             // MainPage
             // 
             AutoScaleDimensions = new SizeF(10F, 20F);
@@ -60,6 +86,8 @@
             Name = "MainPage";
             Size = new Size(900, 515);
             Load += MainPage_Load;
+            panelServers.ResumeLayout(false);
+            panelFnBtn.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -67,5 +95,7 @@
 
         private AntdUI.Panel panelServers;
         private Panel panelMain;
+        private Panel panelFnBtn;
+        private AntdUI.Button btnAppSetting;
     }
 }

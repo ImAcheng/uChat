@@ -2,9 +2,9 @@
 using System.Diagnostics;
 
 namespace uChat_Desktop.Service {
-    internal class ApiService {
-        public static readonly string ApiAddress = "localhost:5331";
-        public static readonly Uri RestApiUri = new Uri($"http://localhost:5331");
+    internal interface ApiService {
+        public static string ApiAddress = "localhost:5331";
+        public static Uri RestApiUri = new Uri($"http://localhost:5331");
         public static HttpClient ApiClient;
 
         public static bool IsConnected = false;
@@ -37,6 +37,43 @@ namespace uChat_Desktop.Service {
         public static async Task CloseAllWebSockets() {
             await _CloseAccountWebSocket();
             await _CloseChatWebSocket();
+        }
+
+        /// <summary>
+        /// Try to convert a provided IP in .:{port?} format to localhost:{port?} format.
+        /// Return true if provided IP is in correct format.
+        /// </summary>
+        public static bool TryConvertIP(string src, out string? result) {
+            src = src.Trim();
+
+            if (string.IsNullOrWhiteSpace(src)) {
+                result = null;
+                return false;
+            }
+
+            var parts = src.Split(':');
+
+            // check for no port first
+            if (parts.Length == 1) {
+                if (src == ".") {
+                    result = null;
+                    return false;
+                }
+
+                result = src;
+                return true;
+            }
+
+            var (ip, port) = (parts[0], parts[1]);
+            if (string.IsNullOrWhiteSpace(ip) || string.IsNullOrWhiteSpace(port)) {
+                result = null;
+                return false;
+            }
+
+            ip = (ip == ".") ? "localhost" : ip;
+
+            result = $"{ip}:{port}";
+            return true;
         }
 
         private static async Task<bool> _StartAccountWebSocket() {

@@ -4,6 +4,7 @@ using System.Text.Json;
 using uChat_API.Controllers;
 using uChat_API.DbModel;
 using Microsoft.EntityFrameworkCore;
+using uChat_API.Helper;
 
 namespace uChat_API.Websocket {
     public class ChatHandler {
@@ -24,7 +25,7 @@ namespace uChat_API.Websocket {
 
             var buffer = new byte[1024 * 8];
 
-            Console.WriteLine("[Info] A client connected to Chat Websocket.");
+            uPrint.Info(true, "A client connected to Chat Websocket");
 
             try {
                 while (websocket.State == WebSocketState.Open) {
@@ -37,7 +38,7 @@ namespace uChat_API.Websocket {
                                 CancellationToken.None
                         );
 
-                        Console.WriteLine("[Debug] A client disconnected from Chat Websocket.");
+                        uPrint.Info(true, "A client disconnected from Chat Websocket.");
 
                         break;
                     }
@@ -50,10 +51,10 @@ namespace uChat_API.Websocket {
                 }
             }
             catch (WebSocketException) {
-                Console.WriteLine("[Debug] A client disconnected from Chat Websocket (Forced).");
+                uPrint.Info(true, "A client disconnected from Chat Websocket (Forced).");
             }
             catch (OperationCanceledException) {
-                Console.WriteLine("[Debug] A client disconnected from Chat Websocket (Forced).");
+                uPrint.Info(true, "A client disconnected from Chat Websocket (Forced).");
             }
         }
 

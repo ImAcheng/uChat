@@ -23,5 +23,9 @@ namespace uChat_Desktop.MainApp.Pages {
                 Dock = DockStyle.Fill,
             };
         }
+
+        private void btnAppSetting_Click(object sender, EventArgs e) {
+            FormMain.instance.OpenAppSetting();
+        }
     }
 }

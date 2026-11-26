@@ -28,6 +28,14 @@ namespace uChat_Desktop.MainApp {
             Application.Exit();
         }
 
+        public void OpenAppSetting() {
+
+        }
+
+        public void CloseAppSetting() {
+
+        }
+
         #region Window process
         // use lazy render to prevent window from dying.
         private void FormMain_ResizeBegin(object sender, EventArgs e) {

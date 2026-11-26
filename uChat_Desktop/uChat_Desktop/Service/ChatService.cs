@@ -10,7 +10,7 @@ using uChat_Desktop.Lang;
 using uChat_Desktop.MainApp;
 
 namespace uChat_Desktop.Service {
-    internal interface ChatService {
+    public interface ChatService {
         public static async Task<GetChatResult?> GetChats() {
             try {
                 return await ApiService.ApiClient
